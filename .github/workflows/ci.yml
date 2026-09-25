@@ -17,7 +17,7 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npx playwright install --with-deps chromium
-      - run: npx vitest run
+      - run: npx vitest run --passWithNoTests
       - run: npm run build-storybook
 
   chromatic:

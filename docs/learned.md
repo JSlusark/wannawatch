@@ -337,3 +337,159 @@ npx changeset
 Follow the prompts to describe your feature, commit the tiny generated .md file, and push your code to your PR!
 Would you like to build out the design tokens syntax in src/styles/tokens.css (Stage 1) next, or should we configure your regular Lint/Typecheck/Test CI pipeline file for your PRs?
 
+---
+
+**Put it in a GitHub secret, not an env file.** The line you selected, `${{ secrets.CHROMATIC_PROJECT_TOKEN }}`, tells GitHub Actions to look up a secret stored in your repo settings on GitHub.
+
+**Why a `.env` file won't work here:**
+- A `.env` file lives on **your computer**. It's normally in `.gitignore`, so it never gets pushed, and the GitHub machine running CI never sees it.
+- If you committed the `.env` file so CI could see it, the token would be in your git history, readable by anyone who can see the repo. Secrets exist so that doesn't happen.
+
+**How GitHub secrets work:**
+- You save the value once in GitHub. It's encrypted and never shown again, not even to you.
+- When a workflow runs, `${{ secrets.NAME }}` is replaced with the real value on the CI machine only.
+- If the value shows up in the logs, GitHub hides it as `***`.
+
+**Where to add it:**
+1. Go to your repo on GitHub → **Settings** → **Secrets and variables** → **Actions**.
+2. Click **New repository secret**.
+3. Name: `CHROMATIC_PROJECT_TOKEN`. It has to match the name in the workflow exactly.
+4. Secret: paste the token. Use a regenerated one, since this one was pasted in the chat.
+
+You'd only need the token on your computer if you ran `npx chromatic` there yourself, and CI covers that for now.
+
+Docs: [Using secrets in GitHub Actions](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions)
+
+---
+
+Now push the uncommitted CI fix (`--passWithNoTests`). The push starts a new CI run, which checks both fixes at once: Vitest no longer fails, and Chromatic can log in with the token.
+
+**1. Commit and push the fix**
+
+Try it yourself first. You need to:
+- stage the changed workflow file
+- commit it with a message in the same style as your earlier commits (`fix: ...`, `build: ...`)
+- push to `main`
+
+Hint for the message: this style (Conventional Commits) has a type for CI changes, `ci:`. For example, `ci: allow vitest to pass with no tests yet`.
+
+<details>
+<summary>Stuck? The commands</summary>
+
+```bash
+git add .github/workflows/ci.yml
+git commit -m "ci: allow vitest to pass with no tests yet"
+git push
+```
+</details>
+
+**2. Watch the run**
+
+On GitHub, open the **Actions** tab. You'll see a new run named after your commit. Click it to watch both jobs live, and click a step to see its output.
+
+**3. Check the result**
+
+- **`checks`** should now get past Vitest and run the last step, `build-storybook`.
+- **`chromatic`** should upload your Storybook. Go back to the Chromatic page and see whether it picked up the build.
+
+If anything turns red, click the failed step, read the error, and tell me what it says. Reading CI logs is a skill worth practising. We can go through it together.
+
+Once both are green, CI is set up and we can move on to step 1 of your learning path: writing your first **story** for the `Button`.
+
+---
+
+## What the change does
+
+```diff
+- run: npx vitest run
++ run: npx vitest run --passWithNoTests
+```
+
+- `npx vitest run` runs all your tests once and exits. The exit code is a number: `0` means success and anything else means failure. GitHub looks at that number to decide between ✓ and ✗.
+- By default, Vitest exits with `1` (failure) when it **finds no test files at all**. It assumes a missing test is probably a mistake, like a typo in the file pattern.
+- `--passWithNoTests` means "finding no tests is fine, exit with `0`."
+
+**Should you keep it?** Yes, for now. You have no tests or stories yet, so without the flag CI will fail on every push. The trade-off is that if your test pattern ever breaks, Vitest could silently find nothing and still pass. Once you have your first stories and tests, you can remove the flag so a missing test counts as a failure again.
+
+## About setting up CI/CD soon
+
+Your [current-focus.md](docs/current-focus.md) lists "CI, Chromatic, Changesets, release workflow, hosting" as **out of scope for now**. You're allowed to change that, since it's your plan. Here's where you stand, so you can decide:
+
+- **CI: almost done.** Once this push is green, every push and PR is checked by lint, typecheck, tests, the Storybook build, and Chromatic. The one small addition worth making is **branch protection**, so a red ✗ blocks merging into `main`. It takes about 5 minutes in GitHub settings, with no code.
+- **CD: not started.** It means automatically putting the site online when `main` passes, usually by connecting the repo to **Vercel** (made by the Next.js team, with a free tier). Vercel deploys on every push and gives each PR its own preview link. The catch is that you have no real pages yet, so there's nothing useful to deploy. It will matter more once pages are in scope.
+
+**My suggestion:** push this fix, get CI green, and add branch protection now, because that's cheap and protects you from here on. Leave CD (Vercel) until you have a page to show. Then go back to Storybook and components, which is where the real learning is right now.
+
+Do you want to go that way? Or do you want CD now too? If so, we should update `current-focus.md` so the plan matches what you're working on.
+
+----
+
+## 1. When to set up CD
+
+Yes, roughly. Set up CD once there's something worth putting online: your first page, even an early MVP. Before that there's nothing to deploy.
+
+Connecting the repo to Vercel takes about 10 minutes, so there's no need to plan it far ahead. Once it's connected, every PR gets its own **preview link**, which is great for showing your work in a portfolio.
+
+## 2. Will CI pass if you push now?
+
+I ran the same checks on your computer:
+
+| CI step | Result |
+|---|---|
+| `npm run lint` | ✅ passes (0 errors, 1 warning in `commitlint.config.mjs`; warnings don't fail CI) |
+| `npm run typecheck` | ✅ passes |
+| `npx vitest run --passWithNoTests` | ✅ exits with 0 now |
+| `npm run build-storybook` | ✅ builds |
+| `chromatic` | ❓ the token part should work now, but you have **zero stories**, and I'm not sure whether Chromatic accepts an empty Storybook |
+
+So the `checks` job should go green. The `chromatic` job is the one uncertain part, so watch that one. If it fails with something like "no stories found", the fix is simply to write your first story.
+
+## 3. Your day-to-day workflow
+
+Right now you push straight to `main`. The usual way is to **never commit directly to `main`**: every change goes through a branch and a pull request.
+
+**What those words mean:**
+- A **branch** is a separate line of work. You make changes there without touching `main`. `main` stays the "clean, working" version.
+- A **pull request (PR)** is a request on GitHub: "please merge my branch into `main`." It's where CI runs, where you (or reviewers) see the full diff, and where the merge button lives.
+
+**The loop, for every piece of work (for example "add Button stories"):**
+
+```
+main ──●──────────────────────●──  (merge)
+        \                    /
+         ●── commit ── commit     feat/button-stories
+```
+
+1. **Start from an up-to-date main**
+   `git switch main` then `git pull`
+
+2. **Create a branch** named after the work
+   `git switch -c feat/button-stories`
+   The prefix matches your commit types: `feat/`, `fix/`, `ci/`, `docs/`…
+
+3. **Work and commit** as often as you like on that branch.
+
+4. **Push the branch to GitHub**
+   `git push -u origin feat/button-stories`
+   `-u` links your local branch to the one on GitHub, so next time plain `git push` is enough.
+
+5. **Open the PR.** After pushing, GitHub shows a yellow banner "Compare & pull request". Click it, write a title and a short description of what and why, and create it.
+
+6. **CI runs on the PR.** You'll see the ✓ / ✗ checks at the bottom of the PR page. If something fails, fix it on the same branch and push again; the PR updates by itself.
+
+7. **Merge.** When everything is green, click "Squash and merge". That turns all your branch commits into one clean commit on `main`. Then delete the branch (GitHub offers a button for it).
+
+8. **Back to step 1** for the next piece of work.
+
+**Once branch protection is on,** GitHub won't let you merge a PR with a red ✗, and it won't let you push directly to `main` at all. That's what makes CI actually block broken code.
+
+## Your plan, in order
+
+1. Push the current CI fix **directly to `main`**, just this once, since it's the fix that makes CI work.
+2. Check that it goes green (or see what Chromatic says).
+3. Turn on branch protection. I'll guide you through it when you're there.
+4. From then on, every change goes through the branch → PR loop. Your first one could be the Button stories.
+
+Docs: [About branches](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-branches), [Creating a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request), [GitHub flow](https://docs.github.com/en/get-started/using-github/github-flow)
+
+**Quick check:** in the new workflow, if CI fails on your PR, what do you do? Open a new PR, or something else?
