@@ -493,3 +493,17 @@ main ──●──────────────────────
 Docs: [About branches](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-branches), [Creating a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request), [GitHub flow](https://docs.github.com/en/get-started/using-github/github-flow)
 
 **Quick check:** in the new workflow, if CI fails on your PR, what do you do? Open a new PR, or something else?
+
+---
+
+### What a story is, before you write one
+What: a story is one saved example of a component in a specific state, for example "Button, default look" or "Button, disabled". A stories file (Button.stories.tsx) holds all the examples for one component.
+Why: you can see and test each state on its own, without building a page around it. Chromatic takes a screenshot of each story, so every story also becomes a visual test.
+How: the file has two parts:
+a default export (export default), called the "meta", that tells Storybook which component this file is about and where to show it in the sidebar;
+one named export per story (export const Default = ...), each describing one state.
+For this project: every component you build will get a stories file first, before anything else. That's the "loop for every component" in your focus doc.
+Your first step: open src/components/ui/button.tsx and look at what the Button accepts. Find the variants (the different looks) and sizes. Then read the "Writing stories" page in the Storybook docs: https://storybook.js.org/docs/writing-stories
+
+Try creating the stories file with just one story (the default button). Tell me which variants you found and show me what you wrote, and I'll review it.
+
