@@ -44,11 +44,8 @@ Folder per component: `src/components/ComponentName/` with the component, its st
 - Tailwind utilities by default, with values from tokens, never raw values.
 - `cn()` + `class-variance-authority` for variants.
 - A CSS Module (with `@reference`) only for things awkward as utilities: complex selectors, detailed keyframes.
-- Animation, in this order:
-  1. `tw-animate-css` classes (already installed) when one fits.
-  2. My own CSS animation when none fits: `@keyframes` plus an `--animate-*` variable in `@theme` in `globals.css` so it becomes a utility class, or a CSS Module for one-off animations.
-  3. The Motion library only when CSS cannot do it well (for example drag gestures and physics on the swipe card). Adding it needs my approval and an ADR.
-- Every animation respects `prefers-reduced-motion` (Tailwind's `motion-safe:` / `motion-reduce:`).
+- Animation: use a library whenever one fits instead of writing it by hand. `tw-animate-css` (already installed) for simple enter/exit effects; a dedicated library such as Motion for anything more (flips, tilts, drag gestures, physics on the swipe card).
+- Every animation respects `prefers-reduced-motion` (Tailwind's `motion-safe:` / `motion-reduce:`, or the library's reduced-motion option).
 
 ## Out of scope for now
 
@@ -62,7 +59,7 @@ Do not work on these unless I explicitly ask:
 
 ## Guardrails
 
-- Ask before installing any new dependency, and explain why it is needed.
-- Add a shadcn component only when a component actually needs it. Build domain components (cards, rating, chips) by hand.
+- Don't reinvent the wheel: if a well-maintained library already does something, use it. shadcn first for UI pieces, then other libraries (and 21st.dev / shadcn blocks for ready-made patterns). Only write by hand what no library covers. Restyle everything with my tokens.
+- Before installing a new dependency, tell me which one and why, so I can say yes.
 - Do not create components, stories, or files I did not ask for.
 - If a task seems to need something out of scope, stop and tell me instead of doing it.

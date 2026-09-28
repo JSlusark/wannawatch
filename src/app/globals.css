@@ -7,7 +7,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  /* Fallbacks for when Geist isn't loaded (e.g. Storybook) */
+  --font-sans: var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -48,19 +49,46 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Poster cards: things that sit on top of a movie image.
+   Same in light and dark mode, because the image is what's behind them. */
+@theme {
+  --color-on-media: #ffffff; /* main text on top of posters */
+  --color-on-media-muted: #d4d4dc; /* secondary text on posters (genres) */
+  --color-media-scrim: #000000; /* dark fade behind that text */
+  --color-media-control: #ffffff; /* round buttons on posters */
+  --color-media-control-icon: #7a7a7a;
+  --color-rating: #ecc745; /* colour role: ratings */
+  --color-rating-foreground: #06060b;
+  --color-imdb: #f5c518;
+  --color-tomato: #e8391d;
+  --color-tomato-leaf: #3f9b3a;
+  --shadow-hard: 12px 12px 0 0 #4a4a4a; /* solid offset shadow, no blur */
+
+  /* Springy easing: goes a little past the end, then settles (used as ease-spring) */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Liquid rating: the wave slides sideways forever (used as animate-wave) */
+  --animate-wave: wave 3s linear infinite;
+  @keyframes wave {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
+
 :root {
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --foreground: #06060b;
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: #06060b;
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --primary: #ec3674;
+  --primary-foreground: #ffffff;
+  --secondary: #7c2df7;
+  --secondary-foreground: #ffffff;
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: #6b6b76;
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
@@ -90,10 +118,10 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
+  --primary: #ec3674;
+  --primary-foreground: #ffffff;
+  --secondary: #7c2df7;
+  --secondary-foreground: #ffffff;
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
