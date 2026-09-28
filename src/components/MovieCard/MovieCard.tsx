@@ -12,7 +12,7 @@ import {
   type Ref,
 } from "react";
 
-import { Badge } from "@/components/ui/badge";
+import { GenreList } from "@/components/GenreList";
 import type { MovieDetails } from "@/data/movies";
 import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
@@ -377,57 +377,14 @@ function MovieInfo({
           <span className="line-clamp-2 block">{title}</span>
         )}
       </h3>
-      <Genres genres={genres} />
+      {/* 20% smaller than the normal genre text (12px) */}
+      <GenreList genres={genres} max={3} className="text-[0.6rem]" />
 
       {/* Plot hidden for now: the full description is in the details pop-up
       <p className="line-clamp-3 text-sm leading-snug font-medium">
         {synopsis}
       </p> */}
     </div>
-  );
-}
-
-// Genre labels on the card: 20% smaller than the default badge (12px text, 24px tall)
-const smallLabel = "h-[1.2rem] px-1.5 text-[0.6rem]";
-
-const MAX_GENRES = 3;
-
-// Each genre always gets the same soft colour (picked from its name)
-const GENRE_TINTS = [
-  "soft-lime",
-  "soft-purple",
-  "soft-orange",
-  "soft-pink",
-] as const;
-
-function genreTint(genre: string) {
-  let sum = 0;
-  for (const char of genre) sum += char.charCodeAt(0);
-  return GENRE_TINTS[sum % GENRE_TINTS.length];
-}
-
-function Genres({ genres }: { genres: string[] }) {
-  const shown = genres.slice(0, MAX_GENRES);
-  const hiddenCount = genres.length - shown.length;
-
-  return (
-    <ul aria-label="Genres" className="flex flex-wrap gap-1.5">
-      {shown.map((genre) => (
-        <Badge
-          key={genre}
-          render={<li />}
-          variant={genreTint(genre)}
-          className={smallLabel}
-        >
-          {genre}
-        </Badge>
-      ))}
-      {hiddenCount > 0 && (
-        <Badge render={<li />} variant="outline" className={smallLabel}>
-          +{hiddenCount}
-        </Badge>
-      )}
-    </ul>
   );
 }
 

@@ -3,11 +3,7 @@
     "title": "Mandy",
     "imdbScore": 6.5,
     "rottenTomatoesScore": 90,
-    "genre": [
-      "Action",
-      "Horror",
-      "Thriller"
-    ],
+    "genre": ["Action", "Horror", "Thriller"],
     "plot": "The enchanted lives of a couple in a secluded forest are brutally shattered by a nightmarish religious cult and their demon-biker henchmen, propelling a man into a spiraling, surreal rampage of vengeance.",
     "isWatched": true,
     "isBookmarked": false,
@@ -15,21 +11,13 @@
     "year": 2018,
     "runtime": 121,
     "director": "Panos Cosmatos",
-    "cast": [
-      "Nicolas Cage",
-      "Andrea Riseborough",
-      "Linus Roache"
-    ]
+    "cast": ["Nicolas Cage", "Andrea Riseborough", "Linus Roache"]
   },
   {
     "title": "Paprika",
     "imdbScore": 7.7,
     "rottenTomatoesScore": 85,
-    "genre": [
-      "Animation",
-      "Drama",
-      "Mystery"
-    ],
+    "genre": ["Animation", "Drama", "Mystery"],
     "plot": "When a machine that allows therapists to enter their patients' dreams is stolen, all hell breaks loose. Only a young female therapist, Paprika, can stop it.",
     "isWatched": false,
     "isBookmarked": true,
@@ -37,43 +25,27 @@
     "year": 2006,
     "runtime": 90,
     "director": "Satoshi Kon",
-    "cast": [
-      "Megumi Hayashibara",
-      "Tōru Furuya",
-      "Katsunori Takahashi"
-    ]
+    "cast": ["Megumi Hayashibara", "Tōru Furuya", "Katsunori Takahashi"]
   },
   {
     "title": "The Big Short",
     "imdbScore": 7.8,
     "rottenTomatoesScore": 89,
-    "genre": [
-      "Biography",
-      "Comedy",
-      "Drama"
-    ],
+    "genre": ["Biography", "Comedy", "Drama"],
     "plot": "In 2006-2007 a group of investors bet against the US mortgage market. In their research, they discover how flawed and corrupt the market is.",
     "isWatched": true,
-    "isBookmarked": true,
+    "isBookmarked": false,
     "image": "/film_samples/mov_2.png",
     "year": 2015,
     "runtime": 130,
     "director": "Adam McKay",
-    "cast": [
-      "Christian Bale",
-      "Steve Carell",
-      "Ryan Gosling",
-      "Brad Pitt"
-    ]
+    "cast": ["Christian Bale", "Steve Carell", "Ryan Gosling", "Brad Pitt"]
   },
   {
     "title": "Leviticus",
     "imdbScore": 6.2,
     "rottenTomatoesScore": 75,
-    "genre": [
-      "Drama",
-      "Short"
-    ],
+    "genre": ["Drama", "Short"],
     "plot": "Two young men struggle with their desires and their faith as they navigate a deeply complex and haunting relationship.",
     "isWatched": false,
     "isBookmarked": false,
@@ -85,10 +57,7 @@
     "title": "Home Alone",
     "imdbScore": 7.7,
     "rottenTomatoesScore": 67,
-    "genre": [
-      "Comedy",
-      "Family"
-    ],
+    "genre": ["Comedy", "Family"],
     "plot": "An eight-year-old troublemaker must protect his house from a pair of burglars when he is accidentally left home alone by his family during Christmas vacation.",
     "isWatched": true,
     "isBookmarked": false,
@@ -96,21 +65,13 @@
     "year": 1990,
     "runtime": 103,
     "director": "Chris Columbus",
-    "cast": [
-      "Macaulay Culkin",
-      "Joe Pesci",
-      "Daniel Stern",
-      "Catherine O'Hara"
-    ]
+    "cast": ["Macaulay Culkin", "Joe Pesci", "Daniel Stern", "Catherine O'Hara"]
   },
   {
     "title": "Meet the Parents",
     "imdbScore": 7.0,
     "rottenTomatoesScore": 84,
-    "genre": [
-      "Comedy",
-      "Romance"
-    ],
+    "genre": ["Comedy", "Romance"],
     "plot": "Male nurse Greg Focker meets his girlfriend's parents before proposing, but her suspicious father is every date's worst nightmare.",
     "isWatched": true,
     "isBookmarked": false,
@@ -118,63 +79,40 @@
     "year": 2000,
     "runtime": 108,
     "director": "Jay Roach",
-    "cast": [
-      "Ben Stiller",
-      "Robert De Niro",
-      "Teri Polo",
-      "Blythe Danner"
-    ]
+    "cast": ["Ben Stiller", "Robert De Niro", "Teri Polo", "Blythe Danner"]
   },
   {
     "title": "Gladiator",
     "imdbScore": 8.5,
     "rottenTomatoesScore": 80,
-    "genre": [
-      "Action",
-      "Adventure",
-      "Drama"
-    ],
+    "genre": ["Action", "Adventure", "Drama"],
     "plot": "A former Roman General sets out to exact vengeance against the corrupt emperor who murdered his family and sent him into slavery.",
     "isWatched": true,
-    "isBookmarked": true,
+    "isBookmarked": false,
     "image": "/film_samples/mov_6.png",
     "year": 2000,
     "runtime": 155,
     "director": "Ridley Scott",
-    "cast": [
-      "Russell Crowe",
-      "Joaquin Phoenix",
-      "Connie Nielsen"
-    ]
+    "cast": ["Russell Crowe", "Joaquin Phoenix", "Connie Nielsen"]
   },
   {
     "title": "Project Hail Mary",
     "imdbScore": 8.1,
     "rottenTomatoesScore": 92,
-    "genre": [
-      "Sci-Fi",
-      "Adventure",
-      "Drama"
-    ],
+    "genre": ["Sci-Fi", "Adventure", "Drama"],
     "plot": "An astronaut wakes up alone on a spaceship to find that his crewmates are dead, and he is the only one who can save Earth from a catastrophic extinction event.",
     "isWatched": false,
     "isBookmarked": true,
     "image": "/film_samples/mov_7.png",
     "year": 2026,
     "director": "Phil Lord, Christopher Miller",
-    "cast": [
-      "Ryan Gosling"
-    ]
+    "cast": ["Ryan Gosling"]
   },
   {
     "title": "Sorry to Bother You",
     "imdbScore": 6.9,
     "rottenTomatoesScore": 93,
-    "genre": [
-      "Comedy",
-      "Fantasy",
-      "Sci-Fi"
-    ],
+    "genre": ["Comedy", "Fantasy", "Sci-Fi"],
     "plot": "In an alternate present-day version of Oakland, telemarketer Cassius Green discovers a magical key to professional success, propelling him into a universe of greed.",
     "isWatched": true,
     "isBookmarked": false,
@@ -182,20 +120,13 @@
     "year": 2018,
     "runtime": 112,
     "director": "Boots Riley",
-    "cast": [
-      "Lakeith Stanfield",
-      "Tessa Thompson",
-      "Armie Hammer"
-    ]
+    "cast": ["Lakeith Stanfield", "Tessa Thompson", "Armie Hammer"]
   },
   {
     "title": "Obsession",
     "imdbScore": 6.4,
     "rottenTomatoesScore": 78,
-    "genre": [
-      "Drama",
-      "Thriller"
-    ],
+    "genre": ["Drama", "Thriller"],
     "plot": "A chilling exploration of a young man whose sudden fixation leads him down a dark and destructive psychological path.",
     "isWatched": false,
     "isBookmarked": false,

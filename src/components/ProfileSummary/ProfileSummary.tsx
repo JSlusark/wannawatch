@@ -1,3 +1,4 @@
+import { GenreList } from "@/components/GenreList";
 import { Badge } from "@/components/ui/badge";
 import type { UserProfile } from "@/data/user";
 import { cn } from "@/lib/utils";
@@ -25,7 +26,7 @@ function ProfileSummary({
     <section
       aria-labelledby="profile-heading"
       className={cn(
-        "mx-auto flex w-[90vw] max-w-full flex-col gap-10",
+        "mx-auto flex w-full lg:w-[70vw] flex-col gap-10",
         className,
       )}
     >
@@ -62,18 +63,25 @@ function ProfileSummary({
                 {group.heading}
               </dt>
               <dd>
-                <ul className="mt-2 flex flex-wrap justify-center gap-2 sm:justify-start">
-                  {group.labels.map((label) => (
-                    <Badge
-                      key={label}
-                      render={<li />}
-                      variant={TINTS[index % TINTS.length]}
-                      className="h-7 text-sm"
-                    >
-                      {label}
-                    </Badge>
-                  ))}
-                </ul>
+                {group.plain ? (
+                  <GenreList
+                    genres={group.labels}
+                    className="mt-2 justify-center text-sm sm:justify-start"
+                  />
+                ) : (
+                  <ul className="mt-2 flex flex-wrap justify-center gap-2 sm:justify-start">
+                    {group.labels.map((label) => (
+                      <Badge
+                        key={label}
+                        render={<li />}
+                        variant={TINTS[index % TINTS.length]}
+                        className="h-7 text-sm"
+                      >
+                        {label}
+                      </Badge>
+                    ))}
+                  </ul>
+                )}
               </dd>
             </div>
           ))}

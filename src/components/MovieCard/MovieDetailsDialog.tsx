@@ -2,7 +2,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { X } from "lucide-react";
 import Image from "next/image";
 
-import { Badge } from "@/components/ui/badge";
+import { GenreList } from "@/components/GenreList";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { MovieDetails } from "@/data/movies";
@@ -76,13 +76,7 @@ function MovieDetailsContent({
               {facts.join(" · ")}
             </p>
           )}
-          <ul aria-label="Genres" className="flex flex-wrap gap-2">
-            {genres.map((genre) => (
-              <Badge key={genre} render={<li />} variant="soft-lime">
-                {genre}
-              </Badge>
-            ))}
-          </ul>
+          <GenreList genres={genres} />
           <p className="flex items-center gap-5 font-mono text-base font-bold">
             <span className="flex items-center gap-2">
               <ImdbIcon />

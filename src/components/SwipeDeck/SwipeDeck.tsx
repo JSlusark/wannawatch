@@ -23,7 +23,7 @@ import {
 
 import { LogoEye } from "@/components/Logo";
 import { MovieCard, MovieDetailsContent } from "@/components/MovieCard";
-import type { Rating } from "@/components/MovieCard/BackCard";
+import { useMovieStatuses } from "@/components/CatalogueGrid/useMovieStatuses";
 import { Button } from "@/components/ui/button";
 import type { Movie } from "@/data/movies";
 import { cn } from "@/lib/utils";
@@ -36,8 +36,6 @@ const VISIBLE_CARDS = 3;
 
 // -1 = skip (to the left), 1 = WannaWatch (to the right)
 type Direction = -1 | 1;
-
-type CardStatus = { watched: boolean; bookmarked: boolean; rating?: Rating };
 
 // Where a card of the pile sits: the top one is straight, the ones behind lean left and right
 function pilePose(position: number) {
@@ -62,14 +60,7 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
   const [direction, setDirection] = useState<Direction>(1); // where the last card flew
   const [leaving, setLeaving] = useState<Direction | null>(null); // arrow key pressed, card on its way out
   const [announcement, setAnnouncement] = useState("");
-  const [status, setStatus] = useState<Record<string, CardStatus>>(() =>
-    Object.fromEntries(
-      movies.map((m) => [
-        m.title,
-        { watched: m.isWatched, bookmarked: m.isBookmarked },
-      ]),
-    ),
-  );
+  const { statuses: status, update: updateStatus } = useMovieStatuses(movies);
 
   // How far the top card is dragged (shared with the coloured background)
   const dragX = useMotionValue(0);
@@ -78,13 +69,6 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
   const wannaWatchCount = movies.filter(
     (m) => status[m.title]?.bookmarked,
   ).length;
-
-  function updateStatus(title: string, change: Partial<CardStatus>) {
-    setStatus((all) => ({
-      ...all,
-      [title]: { watched: false, bookmarked: false, ...all[title], ...change },
-    }));
-  }
 
   // The top card has finished its swipe: record the choice and bring the next card forward
   function decide(choice: Direction) {
