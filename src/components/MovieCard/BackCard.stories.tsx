@@ -22,7 +22,7 @@ const meta = {
   // LiquidRating fills whatever box it's in, so give it the same card face as the real back
   decorators: [
     (Story) => (
-      <div className="relative isolate aspect-2/3 w-90 overflow-hidden rounded-2xl border-3 border-foreground bg-card shadow-hard">
+      <div className="relative isolate aspect-2/3 w-90 overflow-hidden rounded-2xl border-3 border-foreground bg-card">
         <Story />
       </div>
     ),

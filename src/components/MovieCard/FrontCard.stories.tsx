@@ -6,10 +6,7 @@ import mockMovieData from "@/data/mockData.json";
 import type { Rating } from "./BackCard";
 import { MovieCard } from "./MovieCard";
 
-
-
 const movie = mockMovieData[0];
-
 
 const meta = {
   component: MovieCard,
@@ -46,8 +43,25 @@ export const LongText: Story = {
   args: {
     title:
       "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb",
-      plot: "An insane general triggers a path to nuclear holocaust that a war room full of politicians and generals frantically tries to stop.An insane general triggers a path to nuclear holocaust that a war room full of politicians and generals frantically tries to stop. An insane general triggers a path to nuclear holocaust that a war room full of politicians and generals frantically tries to stop.",
-    genres: ["Comedy", "Comedy", "Comedy", "Comedy", "Comedy", "Comedy", "Comedy", "Comedy", "Comedy", "Comedy", "Comedy", "Comedy", "Comedy", "Comedy", "Comedy", "Comedy"], 
+    plot: "An insane general triggers a path to nuclear holocaust that a war room full of politicians and generals frantically tries to stop.An insane general triggers a path to nuclear holocaust that a war room full of politicians and generals frantically tries to stop. An insane general triggers a path to nuclear holocaust that a war room full of politicians and generals frantically tries to stop.",
+    genres: [
+      "Comedy",
+      "Comedy",
+      "Comedy",
+      "Comedy",
+      "Comedy",
+      "Comedy",
+      "Comedy",
+      "Comedy",
+      "Comedy",
+      "Comedy",
+      "Comedy",
+      "Comedy",
+      "Comedy",
+      "Comedy",
+      "Comedy",
+      "Comedy",
+    ],
   },
 };
 

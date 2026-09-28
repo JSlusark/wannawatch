@@ -36,6 +36,8 @@ const FILL: Record<Rating, number> = {
 
 type LiquidRatingProps = {
   title: string;
+  /** How much to scale the content (a narrow card gets a smaller back) */
+  scale?: number;
   onConfirm: (rating: Rating) => void;
   onCancel: () => void;
 };
@@ -43,7 +45,12 @@ type LiquidRatingProps = {
 // Back of the card: drag the liquid's surface up or down to pick a score.
 // It's a Base UI Slider (the same one shadcn's Slider uses), so it also works
 // with the arrow keys and screen readers. The score is a draft until Confirm.
-function LiquidRating({ title, onConfirm, onCancel }: LiquidRatingProps) {
+function LiquidRating({
+  title,
+  scale = 1,
+  onConfirm,
+  onCancel,
+}: LiquidRatingProps) {
   const [draft, setDraft] = useState<Rating>(0); // always start at "It's ok"
   const fill = FILL[draft];
   const text = {
@@ -53,7 +60,8 @@ function LiquidRating({ title, onConfirm, onCancel }: LiquidRatingProps) {
   };
 
   return (
-    <>
+    // zoom scales all the content with the card. The wrapper still fills the whole card.
+    <div style={{ zoom: scale }} className="absolute inset-0">
       {/* The layers, from bottom to top:
           1. dark text + grey heart  2. liquid  3. white copy cut to the liquid
           4. slider (the drag handle)  5. buttons */}
@@ -79,7 +87,7 @@ function LiquidRating({ title, onConfirm, onCancel }: LiquidRatingProps) {
           and grey heart, you see this one instead */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 text-secondary-foreground motion-safe:transition-[clip-path] motion-safe:duration-500 motion-safe:ease-out"
+        className="pointer-events-none absolute inset-0 text-ink motion-safe:transition-[clip-path] motion-safe:duration-500 motion-safe:ease-out"
         style={{ clipPath: `inset(${100 - fill}% 0 0 0)` }}
       >
         <RatingLayout {...text} />
@@ -127,25 +135,20 @@ function LiquidRating({ title, onConfirm, onCancel }: LiquidRatingProps) {
           <span className="pointer-events-auto visible flex gap-5">
             <Button
               size="lg"
+              variant="secondary"
               onClick={() => onConfirm(draft)}
-              className="rounded-full bg-foreground px-4 text-background hover:bg-foreground/85"
             >
               <Check strokeWidth={2.5} />
               Confirm
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={onCancel}
-              className="rounded-full border-foreground px-4"
-            >
+            <Button size="lg" variant="outline" onClick={onCancel}>
               <X strokeWidth={2.5} />
               Cancel
             </Button>
           </span>
         </RatingLayout>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -170,12 +173,12 @@ function RatingLayout({
 }: RatingLayoutProps) {
   return (
     <div className="flex size-full flex-col items-center justify-between px-6 pt-15 pb-15 text-center">
-      <p className="line-clamp-2 text-3xl leading-tight font-bold">
+      <p className="line-clamp-3 font-display text-2xl leading-tight uppercase">
         {question}
       </p>
       <div className="flex flex-col items-center gap-12">
         <Heart score={score} className={cn("size-32 ", heartClassName)} />
-        <p className="text-3xl font-extralight">{answer}</p>
+        <p className="font-display text-2xl uppercase">{answer}</p>
       </div>
       {children}
     </div>
@@ -257,12 +260,12 @@ function ratingLabel(rating: Rating) {
   return LEVELS.find((level) => level.score === rating)?.label ?? "";
 }
 
-// The coloured liquid: a block that grows from the bottom, with a moving wave on its surface
+// The lime liquid: a block that grows from the bottom, with a moving wave on its surface
 function Liquid({ fill }: { fill: number }) {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-x-0 bottom-0 bg-secondary motion-safe:transition-[height] motion-safe:duration-500 motion-safe:ease-out"
+      className="pointer-events-none absolute inset-x-0 bottom-0 bg-lime motion-safe:transition-[height] motion-safe:duration-500 motion-safe:ease-out"
       style={{ height: `${fill}%` }}
     >
       {/* The SVG is twice as wide as the card and holds the same wave twice.
@@ -270,9 +273,20 @@ function Liquid({ fill }: { fill: number }) {
       <svg
         viewBox="0 0 200 10"
         preserveAspectRatio="none"
-        className="absolute bottom-[calc(100%-1px)] left-0 h-3 w-[200%] fill-secondary motion-safe:animate-wave"
+        className="absolute bottom-[calc(100%-1px)] left-0 h-3 w-[200%] motion-safe:animate-wave"
       >
-        <path d="M0 5 Q12.5 0 25 5 T50 5 T75 5 T100 5 T125 5 T150 5 T175 5 T200 5 V10 H0 Z" />
+        <path
+          d="M0 5 Q12.5 0 25 5 T50 5 T75 5 T100 5 T125 5 T150 5 T175 5 T200 5 V10 H0 Z"
+          className="fill-lime"
+        />
+        {/* The outline, drawn along the wave only (not down the sides or bottom) */}
+        <path
+          d="M0 5 Q12.5 0 25 5 T50 5 T75 5 T100 5 T125 5 T150 5 T175 5 T200 5"
+          fill="none"
+          className="stroke-ink"
+          strokeWidth="3"
+          vectorEffect="non-scaling-stroke"
+        />
       </svg>
     </div>
   );

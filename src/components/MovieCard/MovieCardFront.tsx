@@ -97,7 +97,7 @@ function MovieCard({
           <article
             inert={flipped}
             aria-labelledby={titleId}
-            className="relative isolate col-start-1 row-start-1 flex aspect-2/3 flex-col justify-end overflow-hidden rounded-2xl border-3 border-foreground bg-muted text-on-media shadow-hard backface-hidden"
+            className="relative isolate col-start-1 row-start-1 flex aspect-2/3 flex-col justify-end overflow-hidden rounded-2xl border-3 border-foreground bg-muted text-on-media backface-hidden"
           >
             <Poster url={posterUrl} />
             <PosterFade />
@@ -134,7 +134,7 @@ function MovieCard({
             inert={!flipped}
             className="relative col-start-1 row-start-1 rotate-y-180 backface-hidden"
           >
-            <div className="relative isolate size-full overflow-hidden rounded-2xl border-3 border-foreground bg-card shadow-hard">
+            <div className="relative isolate size-full overflow-hidden rounded-2xl border-3 border-foreground bg-card">
               {/* key: a new key = a fresh LiquidRating, so each flip starts from the saved
                   score and forgets any unconfirmed draft */}
               <LiquidRating

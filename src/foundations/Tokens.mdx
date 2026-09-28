@@ -1,0 +1,90 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Foundations/Tokens" />
+
+# Tokens
+
+Neobrutalism: flat colour, pitch-black outlines, hard shadows with no blur.
+Use the **Theme** switch in the toolbar to check light and dark. Rules live in `docs/design-direction.md`.
+
+## Brand colours
+
+Same in light and dark. Text on them is always ink (except white on purple).
+
+<div className="not-prose my-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+  {[
+    ['lime', 'bg-lime', 'bg-lime-soft'],
+    ['purple', 'bg-purple text-white', 'bg-purple-soft'],
+    ['orange', 'bg-orange', 'bg-orange-soft'],
+    ['pink', 'bg-pink', 'bg-pink-soft'],
+  ].map(([name, solid, soft]) => (
+    <div key={name} className="overflow-hidden rounded-lg border-2 border-ink text-ink shadow-brutal-sm">
+      <div className={`${solid} p-3 font-display text-sm`}>{name}</div>
+      <div className={`${soft} border-t-2 border-ink p-2 text-xs`}>{name}-soft</div>
+    </div>
+  ))}
+</div>
+
+## Theme colours
+
+These change with light/dark.
+
+<div className="not-prose my-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+  {[
+    ['background', 'bg-background text-foreground'],
+    ['card', 'bg-card text-card-foreground'],
+    ['muted', 'bg-muted text-muted-foreground'],
+    ['primary', 'bg-primary text-primary-foreground'],
+    ['secondary', 'bg-secondary text-secondary-foreground'],
+    ['destructive', 'bg-destructive text-background'],
+  ].map(([name, cls]) => (
+    <div key={name} className={`${cls} rounded-lg border-2 border-border p-3 text-sm font-medium`}>
+      {name}
+    </div>
+  ))}
+</div>
+
+## Hard shadows
+
+<div className="not-prose my-6 flex flex-wrap gap-8">
+  {['shadow-brutal-sm', 'shadow-brutal', 'shadow-brutal-lg'].map((s) => (
+    <div key={s} className={`${s} rounded-lg border-2 border-border bg-card p-4 text-sm`}>
+      {s}
+    </div>
+  ))}
+</div>
+
+## Type
+
+<div className="not-prose my-4 space-y-3">
+  <p className="font-display text-5xl uppercase leading-none">Display · Archivo Black</p>
+  <p className="text-base">Body · Public Sans. Daily movie recommendations based on what you like.</p>
+  <p className="font-mono text-xs uppercase tracking-wider">Label · Geist Mono</p>
+</div>
+
+## Radius
+
+<div className="not-prose my-4 flex flex-wrap gap-4">
+  {['rounded-sm', 'rounded-md', 'rounded-lg', 'rounded-xl', 'rounded-2xl'].map((r) => (
+    <div key={r} className={`${r} grid size-20 place-items-center border-2 border-border bg-card text-xs`}>
+      {r.replace('rounded-', '')}
+    </div>
+  ))}
+</div>
+
+## Contrast (WCAG AA needs 4.5:1 for text)
+
+| Pair | Ratio |
+| --- | --- |
+| ink on cream | 19.3 |
+| ink on lime | 17.0 |
+| ink on orange | 8.4 |
+| ink on pink | 6.7 |
+| white on purple | 5.9 |
+| muted text on cream | 6.2 |
+| cream on dark background | 17.9 |
+| muted text on dark background | 7.7 |
+| lime on dark background | 15.7 |
+| destructive on cream / dark | 4.7 / 6.5 |
+
+**Never** put lime, orange or pink *text* on a light background. Use them as fills with ink text.

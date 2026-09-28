@@ -6,10 +6,7 @@ import mockMovieData from "@/data/mockData.json";
 import type { Rating } from "./BackCard";
 import { MovieCard } from "./MovieCard";
 
-
-
 const movie = mockMovieData[0];
-
 
 const meta = {
   component: MovieCard,
@@ -31,7 +28,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
 
 // Buttons toggle for real, so you can click them in Storybook
 export const Interactive: Story = {

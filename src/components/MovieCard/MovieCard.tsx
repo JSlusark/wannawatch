@@ -13,11 +13,14 @@ import {
 } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import type { MovieDetails } from "@/data/movies";
 import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
 
 import { LiquidRating, ratingLabel, type Rating } from "./BackCard";
+import { MovieDetailsDialog } from "./MovieDetailsDialog";
 import { ImdbIcon, TomatoIcon } from "./RatingIcons";
+import { useCardScale } from "./useCardScale";
 
 type MovieCardProps = {
   title: string;
@@ -29,6 +32,10 @@ type MovieCardProps = {
   watched?: boolean;
   bookmarked?: boolean;
   rating?: Rating;
+  /** Extra facts for the details pop-up (director, cast, year, runtime) */
+  details?: MovieDetails;
+  /** Drawn over the whole front of the card (the swipe deck uses it for Pass / WannaWatch) */
+  overlay?: ReactNode;
   /** Confirm on the back: the movie is now watched, with this score */
   onRate?: (rating: Rating) => void;
   /** Watched pressed on the front while already watched: un-mark it */
@@ -40,13 +47,15 @@ type MovieCardProps = {
 function MovieCard({
   title,
   genres,
-  plot: synopsis,
+  plot,
   imdbScore,
   rottenTomatoesScore,
   posterUrl,
   watched = false,
   bookmarked: bookMarked = false,
   rating,
+  details,
+  overlay,
   onRate,
   onUnwatch,
   onToggleWannaWatch,
@@ -56,15 +65,20 @@ function MovieCard({
   const [flipped, setFlipped] = useState(false);
   const backRef = useRef<HTMLDivElement>(null);
   const watchedRef = useRef<HTMLButtonElement>(null);
-  const isFirstRender = useRef(true);
+  const previousFlipped = useRef(flipped);
   const tilt = useTilt();
+  // The card's width decides how big the content is, so a small card isn't cramped
+  const [cardRef, scale] = useCardScale<HTMLDivElement>();
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  // Where the pointer went down, to tell a tap from the start of a swipe
+  const pressedAt = useRef({ x: 0, y: 0 });
 
-  // After a flip, move keyboard focus to the side that is now visible
+  // After a flip, move keyboard focus to the side that is now visible.
+  // Only when `flipped` really changed: in development React runs effects twice on
+  // purpose, and a "skip the first run" check would then steal focus on page load.
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
+    if (previousFlipped.current === flipped) return;
+    previousFlipped.current = flipped;
     if (flipped) {
       // Focus the rating slider so the arrow keys can change the score right away
       backRef.current
@@ -77,6 +91,7 @@ function MovieCard({
     // perspective = how "deep" the 3D looks (like the distance to a camera)
     // The mouse is tracked here (this box never moves), so the tilt stays smooth
     <div
+      ref={cardRef}
       className={cn("perspective-distant", size)}
       onPointerMove={tilt.onPointerMove}
       onPointerLeave={tilt.onPointerLeave}
@@ -97,11 +112,30 @@ function MovieCard({
           <article
             inert={flipped}
             aria-labelledby={titleId}
-            className="relative isolate col-start-1 row-start-1 flex aspect-2/3 flex-col justify-end overflow-hidden rounded-2xl border-3 border-foreground bg-muted text-on-media shadow-hard backface-hidden"
+            onPointerDown={(e) => {
+              pressedAt.current = { x: e.clientX, y: e.clientY };
+            }}
+            onClick={(e) => {
+              // Tapping the card opens the details, but not when the tap was on one of its
+              // buttons or when the pointer travelled (that was a swipe). The title is a
+              // button too (marked data-details), which is the way in for the keyboard.
+              if (
+                (e.target as HTMLElement).closest("button:not([data-details])")
+              )
+                return;
+              const moved = Math.hypot(
+                e.clientX - pressedAt.current.x,
+                e.clientY - pressedAt.current.y,
+              );
+              // detail 0 = pressed with the keyboard (Enter/Space), so no pointer movement to check
+              if (e.detail === 0 || moved < 6) setDetailsOpen(true);
+            }}
+            className="@container relative isolate col-start-1 row-start-1 flex cursor-pointer aspect-2/3 flex-col justify-end overflow-hidden rounded-xl border-3 border-border bg-muted text-on-media backface-hidden"
           >
             <Poster url={posterUrl} />
             <PosterFade />
             <CardActions
+              scale={scale}
               watched={watched}
               rating={rating}
               watchedRef={watchedRef}
@@ -117,45 +151,50 @@ function MovieCard({
               titleId={titleId}
               title={title}
               genres={genres}
-              synopsis={synopsis}
               imdbScore={imdbScore}
               rottenTomatoesScore={rottenTomatoesScore}
+              opensDetails
+              scale={scale}
             />
-            {/* <Glare
-              x={tilt.glare.x}
-              y={tilt.glare.y}
-              visible={tilt.glare.visible}
-            /> */}
+            {overlay}
           </article>
 
           {/* BACK: rate the movie. Pre-rotated 180° so it faces you once the card turns */}
           <div
             ref={backRef}
             inert={!flipped}
+            // Tells a swipe deck not to start a swipe here, so dragging the rating slider works
+            data-no-swipe
             className="relative col-start-1 row-start-1 rotate-y-180 backface-hidden"
           >
-            <div className="relative isolate size-full overflow-hidden rounded-2xl border-3 border-foreground bg-card shadow-hard">
+            <div className="relative isolate size-full overflow-hidden rounded-xl border-3 border-border bg-card">
               {/* key: a new key = a fresh LiquidRating, so each flip starts from the saved
                   score and forgets any unconfirmed draft */}
               <LiquidRating
                 key={String(flipped)}
                 title={title}
+                scale={scale}
                 onConfirm={(score) => {
                   setFlipped(false);
                   onRate?.(score);
                 }}
                 onCancel={() => setFlipped(false)}
               />
-              {/* The back is turned around, so left and right are swapped for the glare */}
-              <Glare
-                x={100 - tilt.glare.x}
-                y={tilt.glare.y}
-                visible={tilt.glare.visible}
-              />
             </div>
           </div>
         </div>
       </div>
+      <MovieDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        title={title}
+        genres={genres}
+        plot={plot}
+        imdbScore={imdbScore}
+        rottenTomatoesScore={rottenTomatoesScore}
+        posterUrl={posterUrl}
+        details={details}
+      />
     </div>
   );
 }
@@ -163,13 +202,11 @@ function MovieCard({
 // How strongly the card leans: bigger number = gentler tilt (same as the reference)
 const TILT_SOFTNESS = 80;
 
-// Follows the mouse and returns the tilt transform + where the glare should be
+// Follows the mouse and returns the tilt transform
 function useTilt() {
   const [state, setState] = useState({
     rotateX: 0,
     rotateY: 0,
-    x: 50, // glare position, in % of the card
-    y: 50,
     active: false,
   });
 
@@ -186,14 +223,12 @@ function useTilt() {
       // Mouse below the middle → top edge leans back; right of middle → right edge leans back
       rotateX: (y - rect.height / 2) / TILT_SOFTNESS,
       rotateY: (rect.width / 2 - x) / TILT_SOFTNESS,
-      x: (x / rect.width) * 100,
-      y: (y / rect.height) * 100,
       active: true,
     });
   }
 
   function onPointerLeave() {
-    setState({ rotateX: 0, rotateY: 0, x: 50, y: 50, active: false });
+    setState({ rotateX: 0, rotateY: 0, active: false });
   }
 
   return {
@@ -202,22 +237,16 @@ function useTilt() {
     transform: state.active
       ? `rotateX(${state.rotateX}deg) rotateY(${state.rotateY}deg) scale3d(1.05, 1.05, 1.05)`
       : undefined,
-    glare: { x: state.x, y: state.y, visible: state.active },
   };
 }
 
-// Soft white light that follows the mouse, like light reflecting on glossy paper
-function Glare({ x, y, visible }: { x: number; y: number; visible: boolean }) {
+// A dark fade over the bottom of the poster so the white text is readable on any picture.
+// The one place we allow a gradient: it's a readability layer, not decoration.
+function PosterFade() {
   return (
     <div
       aria-hidden="true"
-      className={cn(
-        "pointer-events-none absolute inset-0 transition-opacity duration-200",
-        visible ? "opacity-100" : "opacity-0",
-      )}
-      style={{
-        background: `radial-gradient(circle at ${x}% ${y}%, color-mix(in srgb, var(--color-on-media) 15%, transparent), transparent 50%)`,
-      }}
+      className="absolute inset-x-0 bottom-0 -z-10 h-4/5 bg-linear-to-t from-media-scrim/95 via-media-scrim/75 to-transparent"
     />
   );
 }
@@ -227,7 +256,7 @@ function Poster({ url }: { url?: string }) {
     return (
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 flex flex-col items-center justify-center bg-black/70 pb-[65%] text-muted-foreground"
+        className="absolute inset-0 -z-10 flex flex-col items-center justify-center bg-purple-soft pb-[65%] text-ink"
       >
         <Film className="size-12" />
         <p>Image not found</p>
@@ -246,17 +275,8 @@ function Poster({ url }: { url?: string }) {
   );
 }
 
-// Keeps white text readable on any poster
-function PosterFade() {
-  return (
-    <div
-      aria-hidden="true"
-      className="absolute inset-x-0 bottom-0 -z-10 h-3/5 bg-linear-to-t from-media-scrim/85 via-media-scrim/45 to-transparent"
-    />
-  );
-}
-
 type CardActionsProps = {
+  scale?: number;
   watched: boolean;
   rating?: Rating;
   watchedRef: Ref<HTMLButtonElement>;
@@ -266,6 +286,7 @@ type CardActionsProps = {
 };
 
 function CardActions({
+  scale = 1,
   watched,
   rating,
   watchedRef,
@@ -278,14 +299,14 @@ function CardActions({
     watched && rating !== undefined ? ratingLabel(rating) : undefined;
 
   return (
-    <div className="absolute top-4 right-4 flex gap-2">
+    <div style={{ zoom: scale }} className="absolute top-6 right-5 flex gap-2">
       <CardToggle
         ref={watchedRef}
         // The name includes the visible score, so voice users can say what they see
         label={score ? `Watched: ${score}` : "Watched"}
         pressed={watched}
         onPressedChange={onToggleWatched}
-        pressedClassName="aria-pressed:bg-secondary aria-pressed:text-secondary-foreground aria-pressed:hover:bg-secondary/85"
+        pressedClassName="aria-pressed:bg-secondary aria-pressed:text-secondary-foreground aria-pressed:hover:bg-secondary"
       >
         <Check className="size-6" strokeWidth={2.5} />
         {score && <span className="pr-1.5 text-sm font-semibold">{score}</span>}
@@ -294,7 +315,7 @@ function CardActions({
         label="Bookmarked"
         pressed={bookmarked}
         onPressedChange={onToggleWannaWatch}
-        pressedClassName="aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/85"
+        pressedClassName="aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary"
       >
         <Bookmark className="size-6" fill="currentColor" strokeWidth={0} />
       </CardToggle>
@@ -306,21 +327,31 @@ type MovieInfoProps = {
   titleId: string;
   title: string;
   genres: string[];
-  synopsis: string;
+  /** Not shown for now (commented out below), kept so callers don't change */
+  synopsis?: string;
   imdbScore: number;
   rottenTomatoesScore: number;
+  /** The title becomes a button that opens the details (set by MovieCard) */
+  opensDetails?: boolean;
+  /** How much to scale the text and spacing with the card width */
+  scale?: number;
 };
 
 function MovieInfo({
   titleId,
   title,
   genres,
-  synopsis,
   imdbScore,
   rottenTomatoesScore,
+  opensDetails = false,
+  scale = 1,
 }: MovieInfoProps) {
   return (
-    <div className="flex flex-col px-4 pb-8">
+    // White text straight on the poster: no box, the dark fade (PosterFade) keeps it readable
+    <div
+      style={{ zoom: scale }}
+      className="relative flex flex-col gap-3 px-5 pt-6 pb-8 text-on-media"
+    >
       <Ratings
         imdbScore={imdbScore}
         rottenTomatoesScore={rottenTomatoesScore}
@@ -329,49 +360,76 @@ function MovieInfo({
       <h3
         id={titleId}
         title={title}
-        className="mt-3 line-clamp-2 text-3xl leading-tight font-bold tracking-tight"
+        className="font-display text-3xl leading-none uppercase"
       >
-        {title}
+        {opensDetails ? (
+          // The title is also a real button, so keyboard and screen reader users can open
+          // the details (mouse and touch users can just tap the card)
+          <button
+            type="button"
+            data-details
+            aria-haspopup="dialog"
+            className="line-clamp-2 block w-full cursor-pointer rounded-sm text-left uppercase outline-none focus-visible:ring-3 focus-visible:ring-ring"
+          >
+            {title}
+          </button>
+        ) : (
+          <span className="line-clamp-2 block">{title}</span>
+        )}
       </h3>
       <Genres genres={genres} />
 
-      <p className="mt-3 line-clamp-5 text-sm leading-relaxed font-light">
+      {/* Plot hidden for now: the full description is in the details pop-up
+      <p className="line-clamp-3 text-sm leading-snug font-medium">
         {synopsis}
-      </p>
+      </p> */}
     </div>
   );
 }
 
+// Genre labels on the card: 20% smaller than the default badge (12px text, 24px tall)
+const smallLabel = "h-[1.2rem] px-1.5 text-[0.6rem]";
+
 const MAX_GENRES = 3;
+
+// Each genre always gets the same soft colour (picked from its name)
+const GENRE_TINTS = [
+  "soft-lime",
+  "soft-purple",
+  "soft-orange",
+  "soft-pink",
+] as const;
+
+function genreTint(genre: string) {
+  let sum = 0;
+  for (const char of genre) sum += char.charCodeAt(0);
+  return GENRE_TINTS[sum % GENRE_TINTS.length];
+}
 
 function Genres({ genres }: { genres: string[] }) {
   const shown = genres.slice(0, MAX_GENRES);
   const hiddenCount = genres.length - shown.length;
 
   return (
-    <ul aria-label="Genres" className="mt-2 flex flex-wrap gap-3">
+    <ul aria-label="Genres" className="flex flex-wrap gap-1.5">
       {shown.map((genre) => (
         <Badge
           key={genre}
           render={<li />}
-          variant="outline"
-          className={genreBadge}
+          variant={genreTint(genre)}
+          className={smallLabel}
         >
           {genre}
         </Badge>
       ))}
       {hiddenCount > 0 && (
-        <Badge render={<li />} variant="outline" className={genreBadge}>
-          +{hiddenCount} more
+        <Badge render={<li />} variant="outline" className={smallLabel}>
+          +{hiddenCount}
         </Badge>
       )}
     </ul>
   );
 }
-
-// No outline, no background, no padding: just the light grey text,
-// so the first genre lines up with the title above it
-const genreBadge = "border-transparent bg-transparent px-0 text-on-media-muted";
 
 type RatingsProps = {
   imdbScore: number;
@@ -380,13 +438,13 @@ type RatingsProps = {
 
 function Ratings({ imdbScore, rottenTomatoesScore }: RatingsProps) {
   return (
-    <p className="flex items-center gap-4 text-xs font-semibold">
-      <span className="flex items-center gap-1.5">
+    <p className="flex items-center gap-5 font-mono text-base font-bold">
+      <span className="flex items-center gap-2">
         <ImdbIcon />
         <span className="sr-only">IMDb rating </span>
         {imdbScore.toFixed(1)}/10
       </span>
-      <span className="flex items-center gap-1.5">
+      <span className="flex items-center gap-2">
         <TomatoIcon />
         <span className="sr-only">Rotten Tomatoes score </span>
         {rottenTomatoesScore}%
@@ -404,7 +462,7 @@ type CardToggleProps = {
   children: ReactNode;
 };
 
-// Round white button on top of the poster (a pill when it has text inside).
+// Square outlined button on top of the poster (wider when it has text inside).
 // Toggle sets aria-pressed so screen readers know whether it's on or off.
 function CardToggle({
   ref,
@@ -421,9 +479,10 @@ function CardToggle({
       pressed={pressed}
       onPressedChange={onPressedChange}
       className={cn(
-        "h-11 min-w-11 cursor-pointer gap-1 rounded-full px-2.5",
-        "bg-media-control text-media-control-icon hover:bg-media-control/85 hover:text-media-control-icon",
-        "focus-visible:ring-3 focus-visible:ring-ring motion-reduce:transition-none",
+        "h-11 min-w-11 cursor-pointer gap-1 rounded-lg border-2 border-border px-2.5 shadow-brutal-sm",
+        "bg-card text-card-foreground hover:bg-card hover:text-card-foreground",
+        "motion-safe:transition-[transform,box-shadow] motion-safe:duration-100 hover:-translate-y-0.5 hover:shadow-brutal active:translate-x-[3px] active:translate-y-[3px] active:shadow-none",
+        "focus-visible:ring-3 focus-visible:ring-ring",
         pressedClassName,
       )}
     >
@@ -433,3 +492,5 @@ function CardToggle({
 }
 
 export { MovieCard };
+// Shared with PreviewCard, which shows the same front without buttons or motion
+export { MovieInfo, Poster, PosterFade };
