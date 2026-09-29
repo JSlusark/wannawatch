@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { LiquidRating, ratingLabel, type Rating } from "./BackCard";
 import { MovieDetailsDialog } from "./MovieDetailsDialog";
 import { ImdbIcon, TomatoIcon } from "./RatingIcons";
-import { useCardScale } from "./useCardScale";
+import { useSingleFlip } from "./useSingleFlip";
 
 type MovieCardProps = {
   title: string;
@@ -62,13 +62,14 @@ function MovieCard({
   size: size,
 }: MovieCardProps) {
   const titleId = useId();
-  const [flipped, setFlipped] = useState(false);
+  // Only one card on the page can be flipped: flipping this one turns any other back
+  const [flipped, setFlipped] = useSingleFlip(titleId);
   const backRef = useRef<HTMLDivElement>(null);
   const watchedRef = useRef<HTMLButtonElement>(null);
   const previousFlipped = useRef(flipped);
+  // True when this card closes itself (Confirm/Cancel), false when another card closed it
+  const closedHere = useRef(false);
   const tilt = useTilt();
-  // The card's width decides how big the content is, so a small card isn't cramped
-  const [cardRef, scale] = useCardScale<HTMLDivElement>();
   const [detailsOpen, setDetailsOpen] = useState(false);
   // Where the pointer went down, to tell a tap from the start of a swipe
   const pressedAt = useRef({ x: 0, y: 0 });
@@ -84,14 +85,23 @@ function MovieCard({
       backRef.current
         ?.querySelector<HTMLInputElement>('input[type="range"]')
         ?.focus();
-    } else watchedRef.current?.focus();
+    } else if (closedHere.current) {
+      // Back to the Watched button, but only if the user closed this card. If another
+      // card was flipped, focus belongs to that card, so don't pull it back here.
+      closedHere.current = false;
+      watchedRef.current?.focus();
+    }
   }, [flipped]);
+
+  function closeBack() {
+    closedHere.current = true;
+    setFlipped(false);
+  }
 
   return (
     // perspective = how "deep" the 3D looks (like the distance to a camera)
     // The mouse is tracked here (this box never moves), so the tilt stays smooth
     <div
-      ref={cardRef}
       className={cn("perspective-distant", size)}
       onPointerMove={tilt.onPointerMove}
       onPointerLeave={tilt.onPointerLeave}
@@ -135,7 +145,6 @@ function MovieCard({
             <Poster url={posterUrl} />
             <PosterFade />
             <CardActions
-              scale={scale}
               watched={watched}
               rating={rating}
               watchedRef={watchedRef}
@@ -154,7 +163,6 @@ function MovieCard({
               imdbScore={imdbScore}
               rottenTomatoesScore={rottenTomatoesScore}
               opensDetails
-              scale={scale}
             />
             {overlay}
           </article>
@@ -167,18 +175,19 @@ function MovieCard({
             data-no-swipe
             className="relative col-start-1 row-start-1 rotate-y-180 backface-hidden"
           >
-            <div className="relative isolate size-full overflow-hidden rounded-xl border-3 border-border bg-card">
+            {/* @container: the back sizes its content by the card's width, like the front */}
+            <div className="@container relative isolate size-full overflow-hidden rounded-xl border-3 border-border bg-card">
               {/* key: a new key = a fresh LiquidRating, so each flip starts from the saved
                   score and forgets any unconfirmed draft */}
               <LiquidRating
                 key={String(flipped)}
                 title={title}
-                scale={scale}
+                active={flipped}
                 onConfirm={(score) => {
-                  setFlipped(false);
+                  closeBack();
                   onRate?.(score);
                 }}
-                onCancel={() => setFlipped(false)}
+                onCancel={closeBack}
               />
             </div>
           </div>
@@ -254,12 +263,18 @@ function PosterFade() {
 function Poster({ url }: { url?: string }) {
   if (!url) {
     return (
+      // Centred in the top half, the part that the movie info doesn't cover
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 flex flex-col items-center justify-center bg-purple-soft pb-[65%] text-ink"
+        className="absolute inset-0 -z-10 bg-purple-soft text-ink"
       >
-        <Film className="size-12" />
-        <p>Image not found</p>
+        <div className="flex h-1/2 flex-col items-center justify-center gap-2">
+          {/* Icon at its normal size inside a circle: a 24px icon blown up to 48px looks chunky */}
+          <span className="grid size-12 place-items-center rounded-full border-2 border-ink bg-secondary text-secondary-foreground">
+            <Film className="size-6" />
+          </span>
+          <p className="text-sm font-medium">Image not found</p>
+        </div>
       </div>
     );
   }
@@ -276,7 +291,6 @@ function Poster({ url }: { url?: string }) {
 }
 
 type CardActionsProps = {
-  scale?: number;
   watched: boolean;
   rating?: Rating;
   watchedRef: Ref<HTMLButtonElement>;
@@ -285,8 +299,24 @@ type CardActionsProps = {
   onToggleWannaWatch?: () => void;
 };
 
+// Colour of the Watched button once the movie has a score. Styled by importance, not
+// just by meaning: the movies you liked should jump out when you scan a list, so they
+// get the hot pink ramp (the loudest shade for "Loved it", a lighter one for "Liked it").
+// "It's ok" stays plain white, and the dislikes step back into a quiet grey.
+// The score's text is always inside the button, so colour is never the only clue.
+// Contrast: ink on pink-500 6.7:1, ink on pink-300 11.7:1, grey-700 on grey-200 7.5:1.
+const SCORE_STYLE: Record<Rating, string> = {
+  2: "aria-pressed:bg-pink-500 aria-pressed:text-ink aria-pressed:hover:bg-pink-500 aria-pressed:hover:text-ink",
+  1: "aria-pressed:bg-pink-300 aria-pressed:text-ink aria-pressed:hover:bg-pink-300 aria-pressed:hover:text-ink",
+  0: "aria-pressed:bg-white aria-pressed:text-ink aria-pressed:hover:bg-white aria-pressed:hover:text-ink",
+  [-1]: "aria-pressed:bg-grey-200 aria-pressed:text-grey-700 aria-pressed:hover:bg-grey-200 aria-pressed:hover:text-grey-700",
+  [-2]: "aria-pressed:bg-grey-200 aria-pressed:text-grey-700 aria-pressed:hover:bg-grey-200 aria-pressed:hover:text-grey-700",
+};
+// Watched without a score (shouldn't normally happen): the old purple
+const WATCHED_STYLE =
+  "aria-pressed:bg-secondary aria-pressed:text-secondary-foreground aria-pressed:hover:bg-secondary";
+
 function CardActions({
-  scale = 1,
   watched,
   rating,
   watchedRef,
@@ -299,17 +329,24 @@ function CardActions({
     watched && rating !== undefined ? ratingLabel(rating) : undefined;
 
   return (
-    <div style={{ zoom: scale }} className="absolute top-6 right-5 flex gap-2">
+    // Same distance from the edges as the movie info's side padding, at every card size
+    <div className="absolute top-3 right-3 flex gap-2 @3xs:top-4 @3xs:right-4 @xs:top-5 @xs:right-5">
       <CardToggle
         ref={watchedRef}
         // The name includes the visible score, so voice users can say what they see
         label={score ? `Watched: ${score}` : "Watched"}
         pressed={watched}
         onPressedChange={onToggleWatched}
-        pressedClassName="aria-pressed:bg-secondary aria-pressed:text-secondary-foreground aria-pressed:hover:bg-secondary"
+        pressedClassName={
+          rating === undefined ? WATCHED_STYLE : SCORE_STYLE[rating]
+        }
       >
-        <Check className="size-6" strokeWidth={2.5} />
-        {score && <span className="pr-1.5 text-sm font-semibold">{score}</span>}
+        <Check className="size-5 @3xs:size-6" strokeWidth={2.5} />
+        {score && (
+          <span className="pr-1 text-xs font-semibold @3xs:pr-1.5 @3xs:text-sm">
+            {score}
+          </span>
+        )}
       </CardToggle>
       <CardToggle
         label="Bookmarked"
@@ -317,7 +354,11 @@ function CardActions({
         onPressedChange={onToggleWannaWatch}
         pressedClassName="aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary"
       >
-        <Bookmark className="size-6" fill="currentColor" strokeWidth={0} />
+        <Bookmark
+          className="size-5 @3xs:size-6"
+          fill="currentColor"
+          strokeWidth={0}
+        />
       </CardToggle>
     </div>
   );
@@ -333,10 +374,12 @@ type MovieInfoProps = {
   rottenTomatoesScore: number;
   /** The title becomes a button that opens the details (set by MovieCard) */
   opensDetails?: boolean;
-  /** How much to scale the text and spacing with the card width */
-  scale?: number;
 };
 
+// Sizes follow the card's width with container queries (the card has `@container`):
+// no prefix = narrow card, @3xs = 256px and wider, @xs = 320px and wider.
+// Big things shrink more than small ones: the title goes from 30px to 18px,
+// the ratings from 14px to 12px, and the genres stay at 12px so they stay readable.
 function MovieInfo({
   titleId,
   title,
@@ -344,41 +387,46 @@ function MovieInfo({
   imdbScore,
   rottenTomatoesScore,
   opensDetails = false,
-  scale = 1,
 }: MovieInfoProps) {
   return (
     // White text straight on the poster: no box, the dark fade (PosterFade) keeps it readable
-    <div
-      style={{ zoom: scale }}
-      className="relative flex flex-col gap-3 px-5 pt-6 pb-8 text-on-media"
-    >
+    // Two groups: ratings, then title + genres. More space between the groups (gap-4)
+    // than inside one (gap-2), so the genres clearly belong to the title.
+    <div className="relative flex flex-col gap-4 px-3 pt-6 pb-4 text-on-media @3xs:px-4 @3xs:pb-6 @xs:px-5 @xs:pb-8">
       <Ratings
         imdbScore={imdbScore}
         rottenTomatoesScore={rottenTomatoesScore}
       />
 
-      <h3
-        id={titleId}
-        title={title}
-        className="font-display text-3xl leading-none uppercase"
-      >
-        {opensDetails ? (
-          // The title is also a real button, so keyboard and screen reader users can open
-          // the details (mouse and touch users can just tap the card)
-          <button
-            type="button"
-            data-details
-            aria-haspopup="dialog"
-            className="line-clamp-2 block w-full cursor-pointer rounded-sm text-left uppercase outline-none focus-visible:ring-3 focus-visible:ring-ring"
-          >
-            {title}
-          </button>
-        ) : (
-          <span className="line-clamp-2 block">{title}</span>
-        )}
-      </h3>
-      {/* 20% smaller than the normal genre text (12px) */}
-      <GenreList genres={genres} max={3} className="text-[0.6rem]" />
+      <div className="flex flex-col gap-2">
+        <h3
+          id={titleId}
+          title={title}
+          className="font-display text-lg leading-none uppercase @3xs:text-2xl @xs:text-3xl"
+        >
+          {opensDetails ? (
+            // The title is also a real button, so keyboard and screen reader users can open
+            // the details (mouse and touch users can just tap the card)
+            <button
+              type="button"
+              data-details
+              aria-haspopup="dialog"
+              className="line-clamp-2 block w-full cursor-pointer rounded-sm text-left uppercase outline-none focus-visible:ring-3 focus-visible:ring-ring"
+            >
+              {title}
+            </button>
+          ) : (
+            <span className="line-clamp-2 block">{title}</span>
+          )}
+        </h3>
+        {/* Less important than the title: shown in a softer colour, not a tiny size.
+            Letter spacing helps small all-caps text read more easily. */}
+        <GenreList
+          genres={genres}
+          max={3}
+          className="tracking-wider text-on-media-muted"
+        />
+      </div>
 
       {/* Plot hidden for now: the full description is in the details pop-up
       <p className="line-clamp-3 text-sm leading-snug font-medium">
@@ -393,16 +441,18 @@ type RatingsProps = {
   rottenTomatoesScore: number;
 };
 
+// Secondary to the title: normal weight (500) and a smaller size, so the colourful
+// logos and the numbers don't compete with it
 function Ratings({ imdbScore, rottenTomatoesScore }: RatingsProps) {
   return (
-    <p className="flex items-center gap-5 font-mono text-base font-bold">
-      <span className="flex items-center gap-2">
-        <ImdbIcon />
+    <p className="flex items-center gap-3 font-mono text-xs font-medium @3xs:gap-4 @xs:gap-5 @xs:text-sm">
+      <span className="flex items-center gap-1.5 @3xs:gap-2">
+        <ImdbIcon className="size-5 @xs:size-6" />
         <span className="sr-only">IMDb rating </span>
         {imdbScore.toFixed(1)}/10
       </span>
-      <span className="flex items-center gap-2">
-        <TomatoIcon />
+      <span className="flex items-center gap-1.5 @3xs:gap-2">
+        <TomatoIcon className="size-5 @3xs:size-6 @xs:size-7" />
         <span className="sr-only">Rotten Tomatoes score </span>
         {rottenTomatoesScore}%
       </span>
@@ -436,7 +486,8 @@ function CardToggle({
       pressed={pressed}
       onPressedChange={onPressedChange}
       className={cn(
-        "h-11 min-w-11 cursor-pointer gap-1 rounded-lg border-2 border-border px-2.5 shadow-brutal-sm",
+        // 36px on a narrow card, 44px (the comfortable touch size) from 256px up
+        "h-9 min-w-9 cursor-pointer gap-1 rounded-lg border-2 border-border px-2 shadow-brutal-sm @3xs:h-11 @3xs:min-w-11 @3xs:px-2.5",
         "bg-card text-card-foreground hover:bg-card hover:text-card-foreground",
         "motion-safe:transition-[transform,box-shadow] motion-safe:duration-100 hover:-translate-y-0.5 hover:shadow-brutal active:translate-x-[3px] active:translate-y-[3px] active:shadow-none",
         "focus-visible:ring-3 focus-visible:ring-ring",

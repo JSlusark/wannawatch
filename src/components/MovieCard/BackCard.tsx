@@ -1,16 +1,24 @@
 import { Slider } from "@base-ui/react/slider";
-import { Check, ChevronsUpDown, X } from "lucide-react";
-import { useId, useState, type ReactNode } from "react";
+import { Check, ChevronsUpDown, Pointer, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 // From best (top of the card) to worst (bottom). The number is the score we store.
 const LEVELS = [
-  { score: 2, label: "I loved it!" },
-  { score: 1, label: "I liked it" },
+  { score: 2, label: "Loved it!" },
+  { score: 1, label: "Liked it" },
   { score: 0, label: "It's ok" },
-  { score: -1, label: "Not my thing" },
+  { score: -1, label: "Meh..." },
   { score: -2, label: "I hated it" },
 ] as const;
 
@@ -36,35 +44,69 @@ const FILL: Record<Rating, number> = {
 
 type LiquidRatingProps = {
   title: string;
-  /** How much to scale the content (a narrow card gets a smaller back) */
-  scale?: number;
+  /** false while the card shows its front: the drag hint only counts down when you can see it */
+  active?: boolean;
   onConfirm: (rating: Rating) => void;
   onCancel: () => void;
 };
 
-// Back of the card: drag the liquid's surface up or down to pick a score.
-// It's a Base UI Slider (the same one shadcn's Slider uses), so it also works
-// with the arrow keys and screen readers. The score is a draft until Confirm.
+// Back of the card: grab the liquid anywhere and drag it up or down to pick a score.
+// A Base UI Slider (the same one shadcn's Slider uses) sits on top for the arrow keys
+// and screen readers. The score is a draft until Confirm.
 function LiquidRating({
   title,
-  scale = 1,
+  active = true,
   onConfirm,
   onCancel,
 }: LiquidRatingProps) {
   const [draft, setDraft] = useState<Rating>(0); // always start at "It's ok"
   const fill = FILL[draft];
+  // Has the user moved the liquid yet? Once they have, they know how it works: no more hint
+  const [touched, setTouched] = useState(false);
+  const showHint = useIdleHint(active && !touched);
+  const boxRef = useRef<HTMLDivElement>(null);
+  // Where the drag started: pointer height and liquid level at that moment
+  const dragStart = useRef<{ y: number; fill: number } | null>(null);
+
+  function choose(next: Rating) {
+    setTouched(true);
+    setDraft(next);
+  }
+
+  // Dragging moves the liquid by as much as the pointer moved, wherever you grabbed it,
+  // so pressing low in the liquid doesn't make the level jump down to that spot
+  function onDragStart(e: PointerEvent<HTMLDivElement>) {
+    // Pointer capture: keep receiving the moves even if the pointer leaves the liquid
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragStart.current = { y: e.clientY, fill };
+    setTouched(true);
+  }
+
+  function onDragMove(e: PointerEvent<HTMLDivElement>) {
+    const start = dragStart.current;
+    const box = boxRef.current;
+    if (!start || !box) return;
+    // Pointer movement as a % of the card's height (moving up = positive = more liquid)
+    const moved =
+      ((start.y - e.clientY) / box.getBoundingClientRect().height) * 100;
+    choose(closestLevel(start.fill + moved));
+  }
+
+  function onDragEnd() {
+    dragStart.current = null;
+  }
   const text = {
-    question: `How was ${title}?`,
+    question: `How was "${title}" ?`,
     answer: ratingLabel(draft),
     score: draft,
   };
 
   return (
-    // zoom scales all the content with the card. The wrapper still fills the whole card.
-    <div style={{ zoom: scale }} className="absolute inset-0">
+    // Sizes inside follow the card's width with container queries (the card has `@container`)
+    <div ref={boxRef} className="absolute inset-0">
       {/* The layers, from bottom to top:
           1. dark text + grey heart  2. liquid  3. white copy cut to the liquid
-          4. slider (the drag handle)  5. buttons */}
+          4. slider (keyboard only)  5. drag area  6. hint  7. buttons */}
       <div
         aria-hidden="true"
         className={cn(
@@ -94,30 +136,25 @@ function LiquidRating({
       </div>
 
       {/* The slider's value is the liquid level in % (0 = bottom, 100 = top of the card),
-          so the handle always sits on the liquid's surface. While dragging we snap to the
-          closest level; the arrow keys jump one level at a time. */}
+          so the handle always sits on the liquid's surface. It's only for the keyboard
+          (arrow keys jump one level) and screen readers: the mouse and fingers use the
+          drag area below, so the slider ignores the pointer (pointer-events-none). */}
       <Slider.Root
         value={fill}
-        onValueChange={(value, details) =>
-          setDraft(
-            details.reason === "keyboard"
-              ? nextLevel(draft, value)
-              : closestLevel(value),
-          )
-        }
+        onValueChange={(value, details) => {
+          if (details.reason === "keyboard") choose(nextLevel(draft, value));
+        }}
         min={0}
         max={100}
         orientation="vertical"
       >
-        {/* pointer-events-none = tapping the card does nothing;
-            only the handle can be grabbed (it turns them back on) */}
         <Slider.Control className="pointer-events-none absolute inset-0">
           <Slider.Thumb
             aria-label={text.question}
             getAriaValueText={(_formatted, value) =>
               ratingLabel(closestLevel(value))
             }
-            className="group pointer-events-auto flex h-16 w-full cursor-grab touch-none items-end justify-end pr-4 pb-1 active:cursor-grabbing motion-safe:transition-[bottom] motion-safe:duration-500 motion-safe:ease-out"
+            className="group flex h-16 w-full items-end justify-end pr-4 pb-1 motion-safe:transition-[bottom] motion-safe:duration-500 motion-safe:ease-out"
           >
             {/* The visible grip, on the right just under the liquid's surface (away from the heart) */}
             {/* <span className="flex h-6 w-12 items-center justify-center rounded-full bg-secondary-foreground text-secondary shadow-sm group-has-focus-visible:ring-3 group-has-focus-visible:ring-ring">
@@ -127,23 +164,49 @@ function LiquidRating({
         </Slider.Control>
       </Slider.Root>
 
+      {/* Drag area: the whole liquid plus a strip just above its surface (so you can also
+          grab the wave itself). It grows and shrinks with the liquid.
+          touch-none: on a phone, dragging here moves the liquid instead of scrolling.
+          It sits under the buttons layer, so Confirm and Cancel still get their clicks. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 cursor-grab touch-none active:cursor-grabbing"
+        style={{ height: `calc(${fill}% + 2rem)` }}
+        onPointerDown={onDragStart}
+        onPointerMove={onDragMove}
+        onPointerUp={onDragEnd}
+        onPointerCancel={onDragEnd}
+      />
+
+      {/* AnimatePresence lets the hint fade out before it's removed */}
+      <AnimatePresence>{showHint && <DragHint fill={fill} />}</AnimatePresence>
+
       {/* A third copy of the same layout with everything made invisible except the
           buttons (`visible` overrides the parent's `invisible`), so they land in the
           right spot. Invisible things are also skipped by screen readers. */}
       <div className="pointer-events-none invisible absolute inset-0">
         <RatingLayout {...text}>
-          <span className="pointer-events-auto visible flex gap-5">
+          {/* On a narrow card two labelled buttons don't fit side by side, so they show
+              just the icon. sr-only keeps the word for screen readers; from 320px up
+              (not-sr-only) it's visible again. */}
+          <span className="pointer-events-auto visible flex gap-2 @xs:gap-4">
             <Button
               size="lg"
               variant="secondary"
+              className={actionSize}
               onClick={() => onConfirm(draft)}
             >
               <Check strokeWidth={2.5} />
-              Confirm
+              <span className="sr-only @xs:not-sr-only">Confirm</span>
             </Button>
-            <Button size="lg" variant="outline" onClick={onCancel}>
+            <Button
+              size="lg"
+              variant="outline"
+              className={actionSize}
+              onClick={onCancel}
+            >
               <X strokeWidth={2.5} />
-              Cancel
+              <span className="sr-only @xs:not-sr-only">Cancel</span>
             </Button>
           </span>
         </RatingLayout>
@@ -151,6 +214,84 @@ function LiquidRating({
     </div>
   );
 }
+
+// How long the user can sit still before we show how to rate, and how long the hint stays
+const HINT_DELAY_MS = 4000;
+const HINT_VISIBLE_MS = 2800;
+
+// While `enabled`: wait 4 seconds, show the hint, hide it, wait 4 seconds again, and so on.
+// Stops for good once the user moves the liquid (then `enabled` turns false).
+function useIdleHint(enabled: boolean) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const wait = () => {
+      timer = setTimeout(show, HINT_DELAY_MS);
+    };
+    const show = () => {
+      setVisible(true);
+      timer = setTimeout(() => {
+        setVisible(false);
+        wait();
+      }, HINT_VISIBLE_MS);
+    };
+    wait();
+    // Leaving the back (or the card going away) cancels the countdown
+    return () => clearTimeout(timer);
+  }, [enabled]);
+
+  return enabled && visible;
+}
+
+// "Drag the juice to rate": a hand on the right side of the liquid's surface that
+// pushes up and down twice, next to a short label. Made with Motion: it fades and slides
+// in, and fades out when AnimatePresence removes it.
+// Hidden from screen readers: the slider already tells them how it works.
+// In the card it's shown by useIdleHint (4 seconds without a drag); `loop` keeps the hand
+// moving forever, for the Storybook story that shows just the animation.
+function DragHint({ fill, loop = false }: { fill: number; loop?: boolean }) {
+  // With reduced motion the hand stays still: only the fade in and out remain
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      aria-hidden="true"
+      initial={{ opacity: 0, x: 12 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 12 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      // bottom = the liquid level; translate-y-5 (half the hand's 40px) puts the hand's
+      // centre on the surface. The label sits above it, so it never covers the answer.
+      // gap-8 (32px) is more than the hand's 24px upward stroke, so the two never touch.
+      className="pointer-events-none absolute right-3 flex translate-y-5 flex-col items-end gap-8 @xs:right-5"
+      style={{ bottom: `${fill}%` }}
+    >
+      {/* rating box */}
+      <span className="max-w-28 rounded-md border-2 border-border bg-card px-2 py-1 text-right font-mono text-xs font-bold tracking-wider text-card-foreground uppercase shadow-brutal-sm">
+        Drag the juice to rate
+      </span>
+      <motion.span
+        className="grid size-10 place-items-center rounded-full border-2 border-border bg-card text-card-foreground shadow-brutal-sm"
+        // Up, a little below the start, back to the start: twice, easing in and out
+        animate={reduceMotion ? undefined : { y: [0, -24, 12, 0] }}
+        transition={{
+          duration: 1.1,
+          ease: "easeInOut",
+          delay: 0.2,
+          repeat: loop ? Infinity : 1,
+          repeatDelay: loop ? 0.6 : 0,
+        }}
+      >
+        <Pointer className="size-5" strokeWidth={2.5} />
+      </motion.span>
+    </motion.div>
+  );
+}
+
+// Replaces the "lg" button size: 40px tall on a narrow card, 48px from 320px up
+const actionSize = "h-10 px-3 text-sm @xs:h-12 @xs:px-4";
 
 type RatingLayoutProps = {
   question: string;
@@ -160,7 +301,9 @@ type RatingLayoutProps = {
   children?: ReactNode;
 };
 
-// Question at the top, heart + score in the middle, buttons at the bottom.
+// Question at the top, heart + answer in the middle, buttons at the bottom.
+// The answer is the most important text (it changes as you drag), so it gets the big
+// display font. The question is only a label, so it's small, monospace and uppercase.
 // Drawn three times (dark, white, buttons), so every copy must use exactly the
 // same layout to line up on top of each other.
 function RatingLayout({
@@ -169,16 +312,22 @@ function RatingLayout({
   score,
   heartClassName,
   // Empty space as tall as the buttons, so the text copies stay aligned with them
-  children = <span className="block " />,
+  children = <span className="block h-10 @xs:h-12" />,
 }: RatingLayoutProps) {
   return (
-    <div className="flex size-full flex-col items-center justify-between px-6 pt-15 pb-15 text-center">
-      <p className="line-clamp-3 font-display text-2xl leading-tight uppercase">
+    <div className="flex size-full flex-col items-center justify-between p-4 text-center @3xs:px-6 @3xs:py-8 @xs:py-12">
+      <p className="line-clamp-2 font-mono text-xs font-bold tracking-wider uppercase @xs:text-sm">
         {question}
       </p>
-      <div className="flex flex-col items-center gap-12">
-        <Heart score={score} className={cn("size-32 ", heartClassName)} />
-        <p className="font-display text-2xl uppercase">{answer}</p>
+      {/* The gap leaves room for the heart when it grows (up to 2x for "I loved it!") */}
+      <div className="flex flex-col items-center gap-8 @3xs:gap-12">
+        <Heart
+          score={score}
+          className={cn("size-16 @3xs:size-24 @xs:size-32", heartClassName)}
+        />
+        <p className="font-display text-xl uppercase @3xs:text-2xl @xs:text-3xl">
+          {answer}
+        </p>
       </div>
       {children}
     </div>
@@ -292,4 +441,11 @@ function Liquid({ fill }: { fill: number }) {
   );
 }
 
-export { LiquidRating, ratingLabel, type Rating };
+export {
+  DragHint,
+  FILL,
+  HINT_DELAY_MS,
+  LiquidRating,
+  ratingLabel,
+  type Rating,
+};

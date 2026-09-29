@@ -10,4 +10,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Project focus
 
-Before starting any task, read `docs/current-focus.md`: it defines what is in scope right now and how to help (the developer is learning, so guide and explain instead of writing everything).
+Before starting any task, read `docs/current-focus.md`: it defines what is in scope right now and how to help (when asked for a change, do all of it yourself, including running commands and checking the result, then explain it in plain words).

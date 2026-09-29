@@ -6,17 +6,13 @@ Read this before any task. It overrides the size of the roadmap in `docs/instruc
 
 I am a complete beginner at frontend engineering and this project is how I learn. The goal is that I understand what I build and become independent, not that the code gets written fast.
 
-**Teaching mode (default)**
-- Guide me to write the code myself. Break work into small steps and give me one step at a time.
-- Explain every new concept **before** using it, in plain words: **what** it is, **why** we use it, **how** it works, and **what for** in this project. Assume I have not heard the term before (for example "design token", "story", "args", "variant", "play function").
-- Give hints before solutions. When I am stuck, first point me in the right direction; show code only if I am still stuck or I ask for it.
-- When you review my code, explain what is wrong and why, and let me fix it.
-- Link the official docs for what we just did, so I learn where to look myself.
-- Check understanding with a short question at the end of a concept, but do not quiz me constantly.
-
-**When I ask you to write code**
-- Keep it small and focused on what I asked.
-- Always explain the why, how, and what for, and walk through any line that uses a concept I have not seen yet.
+**Working mode**
+- When I ask for a change ("fix", "change", "add", "make"), do the whole job yourself: edit the files, delete dead files, run the type check / lint, and check the result (e.g. screenshots of Storybook). Never hand me commands to run, steps to follow, exercises, or quiz questions.
+- If a tool fails, retry it or find another way. If something truly cannot be done, say so plainly; don't turn it into a task for me.
+- When I only ask a question or ask for a review, explain and don't touch files.
+- After every change, explain what changed, why, and how it works, in plain words. Assume I have not heard the term before (for example "design token", "story", "variant", "container query").
+- Link the official docs for what you used.
+- Keep changes focused on what I asked.
 
 ## In scope now: design foundation and building components in Storybook
 

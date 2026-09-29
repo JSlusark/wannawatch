@@ -5,7 +5,6 @@ import {
   Poster,
   PosterFade,
 } from "@/components/MovieCard/MovieCard";
-import { useCardScale } from "@/components/MovieCard/useCardScale";
 import { cn } from "@/lib/utils";
 
 type PreviewCardProps = {
@@ -30,14 +29,13 @@ function PreviewCard({
   className,
 }: PreviewCardProps) {
   const titleId = useId();
-  const [cardRef, scale] = useCardScale<HTMLElement>();
 
   return (
+    // @container: MovieInfo picks its text sizes from this card's width
     <article
-      ref={cardRef}
       aria-labelledby={titleId}
       className={cn(
-        "relative isolate flex aspect-2/3 flex-col justify-end overflow-hidden rounded-xl border-3 border-border bg-muted text-on-media",
+        "@container relative isolate flex aspect-2/3 flex-col justify-end overflow-hidden rounded-xl border-3 border-border bg-muted text-on-media",
         className,
       )}
     >
@@ -50,7 +48,6 @@ function PreviewCard({
         synopsis={plot}
         imdbScore={imdbScore}
         rottenTomatoesScore={rottenTomatoesScore}
-        scale={scale}
       />
     </article>
   );
