@@ -8,6 +8,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Hard shadows for icons and text (used as drop-shadow-brutal-sm etc.): a drop-shadow
+     follows the shape itself instead of a rectangle around it. In "inline" so the colour
+     is read where it's used, which lets on-media-ink below switch it to black. */
+  --drop-shadow-brutal-sm: 2px 2px 0 var(--shadow-ink);
+  --drop-shadow-brutal: 3px 3px 0 var(--shadow-ink);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   /* Fallbacks for when next/font isn't loaded (e.g. Storybook loads them from .storybook/preview-head.html) */
@@ -132,6 +137,7 @@
   --color-on-media: oklch(1 0 0); /* main text on top of posters */
   --color-on-media-muted: var(--color-grey-300); /* secondary text on posters (genres), 12:1 on the scrim */
   --color-media-scrim: oklch(0 0 0); /* dark fade behind that text */
+  --color-media-glow: var(--color-cream); /* bright fade behind the buttons at the top */
   /* Logo colours, copied from the IMDb and Rotten Tomatoes brands */
   --color-imdb: #f5c518;
   --color-tomato: #e8391d;
@@ -194,6 +200,62 @@
   --ring: var(--color-lime);
   --shadow-ink: var(--color-cream);
   --pink-text: var(--color-pink-500); /* 6.2:1 on the background */
+}
+
+/* The size of the sticker icons on the front of the MovieCard.
+   Set on the buttons' row, which is a container: 100cqw below = the row's width.
+   Icons use it as size-(--sticker-size); the score text reads it for its size and border. */
+@utility sticker-size {
+  /* Preferred size for the card's width: 48px, 56px from 256px, 72px from 320px */
+  --sticker-step: --spacing(12);
+  @container (width >= 16rem) {
+    --sticker-step: --spacing(14);
+  }
+  @container (width >= 20rem) {
+    --sticker-step: --spacing(18);
+  }
+  /* ...but on narrow cards, smaller, to leave room for the score on the check's line at
+     12px: two icons + the spacing (1.5rem: two 8px gaps and the buttons' 2px padding on
+     each side) + 5.5rem (the longest score, "I HATED IT", at 12px with its border).
+     Never under 24px (1.5rem), the smallest size that's still easy to tap: on the tiniest
+     cards (~160px) that means the score gets smaller than 12px instead. */
+  --sticker-size: max(
+    1.5rem,
+    min(var(--sticker-step), calc((100cqw - 1.5rem - 5.5rem) / 2))
+  );
+}
+
+/* The score text next to the check: as big as the check mark (0.85 x the icon size makes
+   the capital letters plus their border as tall as the check), but never wider than the
+   space left on the row: row - two icons - the spacing (1.5rem, as above) - its own border
+   on both sides, divided by 5.93 (how many times its font size the longest score,
+   "I HATED IT", is wide).
+   Every score uses the longest one's size, so all the cards in a list match.
+   The side padding is the border's width, so the border never touches the check. */
+@utility sticker-text-size {
+  font-size: min(
+    calc(var(--sticker-size) * 0.85),
+    calc((100cqw - 2 * var(--sticker-size) - 1.5rem - var(--sticker-size) / 6) / 5.93)
+  );
+  padding-inline: calc(var(--sticker-size) / 12);
+}
+
+/* Sticker text: a border on every side of every letter, the same weight as the sticker
+   icons' border (1/12 of --sticker-size, e.g. 6px next to a 72px icon).
+   A text stroke is centred on the letters' edge and drawn first (paint-order), so the
+   fill covers its inner half: the stroke is twice the border, and only the outer half shows.
+   Not named "text-outline" on purpose: cn() thinks every text-* class is a text colour and
+   would delete it next to a real colour like text-pink-500. */
+@utility sticker-outline {
+  -webkit-text-stroke: calc(var(--sticker-size, --spacing(6)) / 6) var(--border);
+  paint-order: stroke fill;
+}
+
+/* For things on top of a poster: black borders and shadows in light and dark mode,
+   because the poster behind them doesn't change with the theme */
+@utility on-media-ink {
+  --border: var(--color-ink);
+  --shadow-ink: var(--color-ink);
 }
 
 @layer base {

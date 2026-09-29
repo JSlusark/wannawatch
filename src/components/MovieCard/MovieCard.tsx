@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { LiquidRating, ratingLabel, type Rating } from "./BackCard";
 import { MovieDetailsDialog } from "./MovieDetailsDialog";
 import { ImdbIcon, TomatoIcon } from "./RatingIcons";
+import { StickerIcon, stickerButton, stickerShadow } from "./StickerIcon";
 import { useSingleFlip } from "./useSingleFlip";
 
 type MovieCardProps = {
@@ -102,7 +103,7 @@ function MovieCard({
     // perspective = how "deep" the 3D looks (like the distance to a camera)
     // The mouse is tracked here (this box never moves), so the tilt stays smooth
     <div
-      className={cn("perspective-distant", size)}
+      className={cn("perspective-normal", size)}
       onPointerMove={tilt.onPointerMove}
       onPointerLeave={tilt.onPointerLeave}
     >
@@ -143,6 +144,7 @@ function MovieCard({
             className="@container relative isolate col-start-1 row-start-1 flex cursor-pointer aspect-2/3 flex-col justify-end overflow-hidden rounded-xl border-3 border-border bg-muted text-on-media backface-hidden"
           >
             <Poster url={posterUrl} />
+            <PosterTopFade />
             <PosterFade />
             <CardActions
               watched={watched}
@@ -209,7 +211,7 @@ function MovieCard({
 }
 
 // How strongly the card leans: bigger number = gentler tilt (same as the reference)
-const TILT_SOFTNESS = 80;
+const TILT_SOFTNESS = 50;
 
 // Follows the mouse and returns the tilt transform
 function useTilt() {
@@ -260,6 +262,17 @@ function PosterFade() {
   );
 }
 
+// A bright fade from the top of the poster, behind the Watched and Bookmark buttons, so
+// their black outlines stand out on any picture (the bright twin of PosterFade).
+function PosterTopFade() {
+  return (
+    <div
+      aria-hidden="true"
+      className="absolute inset-x-0 top-0 -z-10 h-1/3 bg-linear-to-b from-media-glow/20 via-media-glow/10 to-transparent"
+    />
+  );
+}
+
 function Poster({ url }: { url?: string }) {
   if (!url) {
     return (
@@ -299,22 +312,22 @@ type CardActionsProps = {
   onToggleWannaWatch?: () => void;
 };
 
-// Colour of the Watched button once the movie has a score. Styled by importance, not
-// just by meaning: the movies you liked should jump out when you scan a list, so they
-// get the hot pink ramp (the loudest shade for "Loved it", a lighter one for "Liked it").
-// "It's ok" stays plain white, and the dislikes step back into a quiet grey.
-// The score's text is always inside the button, so colour is never the only clue.
-// Contrast: ink on pink-500 6.7:1, ink on pink-300 11.7:1, grey-700 on grey-200 7.5:1.
-const SCORE_STYLE: Record<Rating, string> = {
-  2: "aria-pressed:bg-pink-500 aria-pressed:text-ink aria-pressed:hover:bg-pink-500 aria-pressed:hover:text-ink",
-  1: "aria-pressed:bg-pink-300 aria-pressed:text-ink aria-pressed:hover:bg-pink-300 aria-pressed:hover:text-ink",
-  0: "aria-pressed:bg-white aria-pressed:text-ink aria-pressed:hover:bg-white aria-pressed:hover:text-ink",
-  [-1]: "aria-pressed:bg-grey-200 aria-pressed:text-grey-700 aria-pressed:hover:bg-grey-200 aria-pressed:hover:text-grey-700",
-  [-2]: "aria-pressed:bg-grey-200 aria-pressed:text-grey-700 aria-pressed:hover:bg-grey-200 aria-pressed:hover:text-grey-700",
+// Colour of the Watched check and its score text once the movie has a score.
+// The movies you liked should jump out when you scan a list, so "Loved it!" and
+// "Liked it" are hot pink. Every other score is the brand purple.
+// The score's text is always shown next to the check, so colour is never the only clue.
+const SCORE_COLOR: Record<Rating, string> = {
+  2: "text-pink-500",
+  1: "text-pink-500",
+  0: "text-secondary",
+  [-1]: "text-secondary",
+  [-2]: "text-secondary",
 };
-// Watched without a score (shouldn't normally happen): the old purple
-const WATCHED_STYLE =
-  "aria-pressed:bg-secondary aria-pressed:text-secondary-foreground aria-pressed:hover:bg-secondary";
+
+// Together the check and the bookmark take about half the card's width.
+// The size itself (48px, 56px from 256px, 72px from 320px) is --sticker-size, set by the
+// `sticker-size` utility on the buttons' wrapper, so the score text can match the border.
+const stickerSize = "size-(--sticker-size)";
 
 function CardActions({
   watched,
@@ -329,21 +342,49 @@ function CardActions({
     watched && rating !== undefined ? ratingLabel(rating) : undefined;
 
   return (
-    // Same distance from the edges as the movie info's side padding, at every card size
-    <div className="absolute top-3 right-3 flex gap-2 @3xs:top-4 @3xs:right-4 @xs:top-5 @xs:right-5">
+    // A row across the top of the card, with the same side distance as the movie info.
+    // @container: the row is a container, so the icon and text sizes can be worked out
+    // from its width (see sticker-size and sticker-text-size in globals.css).
+    // Not rated: both icons sit on the right (justify-end).
+    // on-media-ink: black outlines and shadows, even in dark mode (the poster doesn't change)
+    <div className="@container sticker-size on-media-ink absolute inset-x-3 top-3 flex items-center justify-end gap-2 @3xs:inset-x-4 @3xs:top-4 @xs:inset-x-5 @xs:top-5">
       <CardToggle
         ref={watchedRef}
         // The name includes the visible score, so voice users can say what they see
         label={score ? `Watched: ${score}` : "Watched"}
         pressed={watched}
         onPressedChange={onToggleWatched}
-        pressedClassName={
-          rating === undefined ? WATCHED_STYLE : SCORE_STYLE[rating]
-        }
+        // Rated: the check and its score are one button that stretches over all the
+        // space left of the bookmark (flex-1), with the text right after the check
+        className={cn(score && "min-w-0 flex-1 justify-start")}
       >
-        <Check className="size-5 @3xs:size-6" strokeWidth={2.5} />
-        {score && (
-          <span className="pr-1 text-xs font-semibold @3xs:pr-1.5 @3xs:text-sm">
+        <StickerIcon
+          icon={Check}
+          shape="line"
+          // Not watched: white. Watched: the score's colour
+          // (purple too if it was marked watched without a score)
+          color={
+            !watched
+              ? "text-on-media"
+              : rating === undefined
+                ? "text-secondary"
+                : SCORE_COLOR[rating]
+          }
+          className={cn(stickerSize, stickerShadow)}
+        />
+        {score && rating !== undefined && (
+          // Sticker text: coloured letters with the same black border as the icons on every
+          // side (sticker-outline), no box behind them. Always on the check's line:
+          // whitespace-nowrap never breaks it, and sticker-text-size makes it as big as the
+          // check but never wider than the space left on the row.
+          <span
+            className={cn(
+              "font-display leading-none whitespace-nowrap uppercase sticker-text-size sticker-outline",
+              // The thick border makes the letters sit on black: pink-500 is 6.7:1 there,
+              // but purple-500 only 3.3:1, so purple text uses the lighter 400 (5.9:1)
+              rating >= 1 ? "text-pink-500" : "text-purple-400",
+            )}
+          >
             {score}
           </span>
         )}
@@ -352,12 +393,12 @@ function CardActions({
         label="Bookmarked"
         pressed={bookmarked}
         onPressedChange={onToggleWannaWatch}
-        pressedClassName="aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary"
       >
-        <Bookmark
-          className="size-5 @3xs:size-6"
-          fill="currentColor"
-          strokeWidth={0}
+        <StickerIcon
+          icon={Bookmark}
+          shape="filled"
+          color={bookmarked ? "text-primary" : "text-on-media"}
+          className={cn(stickerSize, stickerShadow)}
         />
       </CardToggle>
     </div>
@@ -465,18 +506,21 @@ type CardToggleProps = {
   label: string;
   pressed: boolean;
   onPressedChange?: () => void;
-  pressedClassName: string;
+  /** Extra classes, e.g. to lay out an icon and its text */
+  className?: string;
   children: ReactNode;
 };
 
-// Square outlined button on top of the poster (wider when it has text inside).
+// On/off button on top of the poster. It has no box of its own: the sticker icon inside
+// is what you see (the pressed state shows as the icon's colour). The invisible button
+// around it is the icon plus a little padding, so it's at least 40px to tap.
 // Toggle sets aria-pressed so screen readers know whether it's on or off.
 function CardToggle({
   ref,
   label,
   pressed,
   onPressedChange,
-  pressedClassName,
+  className,
   children,
 }: CardToggleProps) {
   return (
@@ -486,12 +530,13 @@ function CardToggle({
       pressed={pressed}
       onPressedChange={onPressedChange}
       className={cn(
-        // 36px on a narrow card, 44px (the comfortable touch size) from 256px up
-        "h-9 min-w-9 cursor-pointer gap-1 rounded-lg border-2 border-border px-2 shadow-brutal-sm @3xs:h-11 @3xs:min-w-11 @3xs:px-2.5",
-        "bg-card text-card-foreground hover:bg-card hover:text-card-foreground",
-        "motion-safe:transition-[transform,box-shadow] motion-safe:duration-100 hover:-translate-y-0.5 hover:shadow-brutal active:translate-x-[3px] active:translate-y-[3px] active:shadow-none",
-        "focus-visible:ring-3 focus-visible:ring-ring",
-        pressedClassName,
+        // min-w-0: the width is exactly icon + padding, which the size maths in
+        // globals.css (sticker-size) counts on; min-h-10 keeps it at least 40px tall to tap
+        "h-auto min-h-10 min-w-0 gap-2 rounded-lg p-0.5",
+        // Toggle's own grey hover and pressed backgrounds are switched off
+        "bg-transparent hover:bg-transparent aria-pressed:bg-transparent",
+        stickerButton,
+        className,
       )}
     >
       {children}

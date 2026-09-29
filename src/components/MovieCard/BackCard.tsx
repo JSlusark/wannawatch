@@ -1,5 +1,5 @@
 import { Slider } from "@base-ui/react/slider";
-import { Check, ChevronsUpDown, Pointer, X } from "lucide-react";
+import { Check, MousePointer2, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   useEffect,
@@ -10,16 +10,17 @@ import {
   type ReactNode,
 } from "react";
 
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+import { StickerIcon, stickerButton, stickerShadow } from "./StickerIcon";
 
 // From best (top of the card) to worst (bottom). The number is the score we store.
 const LEVELS = [
-  { score: 2, label: "Loved it!" },
+  { score: 2, label: "Loved it" },
   { score: 1, label: "Liked it" },
   { score: 0, label: "It's ok" },
   { score: -1, label: "Meh..." },
-  { score: -2, label: "I hated it" },
+  { score: -2, label: "Hated it" },
 ] as const;
 
 type Rating = (typeof LEVELS)[number]["score"];
@@ -186,28 +187,37 @@ function LiquidRating({
           right spot. Invisible things are also skipped by screen readers. */}
       <div className="pointer-events-none invisible absolute inset-0">
         <RatingLayout {...text}>
-          {/* On a narrow card two labelled buttons don't fit side by side, so they show
-              just the icon. sr-only keeps the word for screen readers; from 320px up
-              (not-sr-only) it's visible again. */}
-          <span className="pointer-events-auto visible flex gap-2 @xs:gap-4">
-            <Button
-              size="lg"
-              variant="secondary"
-              className={actionSize}
+          {/* The icons are the buttons: no box, just the sticker check and X.
+              The words are for screen readers (aria-label) and mouse users (title). */}
+          <span className="pointer-events-auto visible flex gap-4 @xs:gap-6">
+            <button
+              type="button"
+              aria-label="Confirm"
+              title="Confirm"
               onClick={() => onConfirm(draft)}
+              className={cn(actionSize, stickerButton)}
             >
-              <Check strokeWidth={2.5} />
-              <span className="sr-only @xs:not-sr-only">Confirm</span>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className={actionSize}
+              <StickerIcon
+                icon={Check}
+                shape="line"
+                color="text-secondary"
+                className={cn("size-full", stickerShadow)}
+              />
+            </button>
+            <button
+              type="button"
+              aria-label="Cancel"
+              title="Cancel"
               onClick={onCancel}
+              className={cn(actionSize, stickerButton)}
             >
-              <X strokeWidth={2.5} />
-              <span className="sr-only @xs:not-sr-only">Cancel</span>
-            </Button>
+              <StickerIcon
+                icon={X}
+                shape="line"
+                color="text-card"
+                className={cn("size-full", stickerShadow)}
+              />
+            </button>
           </span>
         </RatingLayout>
       </div>
@@ -269,11 +279,11 @@ function DragHint({ fill, loop = false }: { fill: number; loop?: boolean }) {
       style={{ bottom: `${fill}%` }}
     >
       {/* rating box */}
-      <span className="max-w-28 rounded-md border-2 border-border bg-card px-2 py-1 text-right font-mono text-xs font-bold tracking-wider text-card-foreground uppercase shadow-brutal-sm">
+      <span className="max-w-full  px-2 py-1 text-right font-mono text-xs font-bold tracking-wider uppercase text-pink-500 ">
         Drag the juice to rate
       </span>
       <motion.span
-        className="grid size-10 place-items-center rounded-full border-2 border-border bg-card text-card-foreground shadow-brutal-sm"
+        className="size-10"
         // Up, a little below the start, back to the start: twice, easing in and out
         animate={reduceMotion ? undefined : { y: [0, -24, 12, 0] }}
         transition={{
@@ -284,14 +294,21 @@ function DragHint({ fill, loop = false }: { fill: number; loop?: boolean }) {
           repeatDelay: loop ? 0.6 : 0,
         }}
       >
-        <Pointer className="size-5" strokeWidth={2.5} />
+        {/* A sticker hand like the buttons' icons: no circle behind it */}
+        <StickerIcon
+          icon={MousePointer2}
+          shape="filled"
+          color="text-card"
+          className="size-full drop-shadow-brutal-sm"
+        />
       </motion.span>
     </motion.div>
   );
 }
 
-// Replaces the "lg" button size: 40px tall on a narrow card, 48px from 320px up
-const actionSize = "h-10 px-3 text-sm @xs:h-12 @xs:px-4";
+// Confirm/Cancel size: 40px on a narrow card, 48px from 320px up (same as the
+// empty space RatingLayout keeps for them). The icon fills it; p-1 keeps the shadow inside.
+const actionSize = "size-10 rounded-lg p-1 @xs:size-12";
 
 type RatingLayoutProps = {
   question: string;
