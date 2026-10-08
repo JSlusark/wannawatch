@@ -31,7 +31,7 @@ Every topic answers: **what** it is, **why** we use it, and **where** it lives i
 | **Meta** (default export) | Settings shared by all stories in a file: which component, default args, layout | `const meta = { component: MovieCard, args: {...} }` |
 | **Args** | The props a story passes to the component | `args: { title: movie.title }` |
 | **Controls** | The panel that lets you edit args live in the browser | generated from the args automatically |
-| **`fn()`** | A fake function that records every call, so you can check it was called | `onToggleWatched: fn()` |
+| **`fn()`** | A fake function that records every call, so you can check it was called | `onToggleWatch: fn()` |
 | **`render`** | A custom way to draw the story, e.g. with `useState` so buttons really toggle | the `Interactive` story |
 | **`play` function** | A small automated test that clicks/types in the story and checks the result | clicks "Bookmarked" and expects `aria-pressed="true"` |
 | **a11y panel** | Runs axe checks and lists accessibility problems | tab under the story |
@@ -110,7 +110,7 @@ Docs:
 | --- | --- | --- |
 | **Props** | inputs to a component | `title`, `watched`, `rating` |
 | **`useState`** | memory that survives re-renders; changing it re-draws the component | `flipped` (which side is showing) |
-| **Controlled component** | the parent owns the value and passes it down; the child only reports changes through a callback | `watched` + `onToggleWatched`, `rating` + `onRate` |
+| **Controlled component** | the parent owns the value and passes it down; the child only reports changes through a callback | `watched` + `onToggleWatch`, `rating` + `onRate` |
 | **`useRef`** | a box that points to a real DOM element (or keeps a value without re-rendering) | `frontRef`, `backRef` to move focus |
 | **`useEffect`** | run code **after** React updates the screen, when something changed | move keyboard focus after the card flips |
 | **`useId`** | generates an ID that is unique on the page, even with many cards | links the title to `aria-labelledby`; groups the radios with `name` |

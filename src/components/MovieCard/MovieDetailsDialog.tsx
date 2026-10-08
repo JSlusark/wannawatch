@@ -5,9 +5,22 @@ import Image from "next/image";
 import { GenreList } from "@/components/GenreList";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { MovieDetails } from "@/data/movies";
+import type { Movie } from "@/data/movies";
 
 import { ImdbIcon, TomatoIcon } from "./RatingIcons";
+
+
+      // <MovieDetailsDialog
+      //   open={detailsOpen}
+      //   onOpenChange={setDetailsOpen}
+      //   title={movie.title}
+      //   genres={movie.genre}
+      //   plot={movie.plot}
+      //   imdbScore={movie.imdbScore}
+      //   rottenTomatoesScore={movie.rottenTomatoesScore}
+      //   posterUrl={movie.image}
+      //   // details={details}
+      // />
 
 type MovieDetailsProps = {
   title: string;
@@ -16,7 +29,7 @@ type MovieDetailsProps = {
   imdbScore: number;
   rottenTomatoesScore: number;
   posterUrl?: string;
-  details?: MovieDetails;
+  details?: Movie;
 };
 
 type MovieDetailsDialogProps = MovieDetailsProps & {

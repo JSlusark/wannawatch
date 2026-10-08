@@ -37,15 +37,17 @@ const VISIBLE_CARDS = 3;
 // -1 = skip (to the left), 1 = WannaWatch (to the right)
 type Direction = -1 | 1;
 
-// Where a card of the pile sits: the top one is straight, the ones behind lean left and right
+// How much of each card behind shows below the one in front of it (px)
+const PILE_STEP = 12;
+
+// Where a card of the pile sits: all straight, each one behind a little smaller and lower,
+// so only a strip of its bottom edge peeks out under the stack
 function pilePose(position: number) {
-  if (position === 0) return { x: 0, y: 0, rotate: 0, scale: 1 };
-  const side = position % 2 === 1 ? 1 : -1;
   return {
-    x: side * 6,
-    y: position * 6,
-    rotate: side * (3 + position * 2),
-    scale: 1 - position * 0.02,
+    x: 0,
+    y: position * PILE_STEP,
+    rotate: 0,
+    scale: 1 - position * 0.05,
   };
 }
 
@@ -138,10 +140,12 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
             if (event.key === "ArrowLeft") setLeaving(-1);
             if (event.key === "ArrowRight") setLeaving(1);
           }}
-          className="grid rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+          // pb = room for the edges of the cards behind, which hang below the top card
+          className="grid rounded-xl pb-6 outline-none focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
         >
-          {/* custom = the direction, handed to the card that is leaving so it flies the right way */}
-          <AnimatePresence custom={direction}>
+          {/* custom = the direction, handed to the card that is leaving so it flies the right way.
+            initial={false}: the first cards are simply there when the page opens. */}
+          <AnimatePresence custom={direction} initial={false}>
             {pile.map((movie, position) => {
               const isTop = position === 0;
               const cardStatus = status[movie.title];
@@ -149,10 +153,12 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
                 <motion.div
                   key={movie.title}
                   className="col-start-1 row-start-1"
-                  style={{ zIndex: VISIBLE_CARDS - position }}
-                  // Cards behind are turned a little to alternate sides, like a hand-stacked deck
-                  initial={{ opacity: 0, ...pilePose(position) }}
-                  animate={{ opacity: 1, ...pilePose(position) }}
+                  // originY 1 = shrink towards the bottom edge, so the step down is exactly PILE_STEP
+                  style={{ zIndex: VISIBLE_CARDS - position, originY: 1 }}
+                  // A new card starts hidden right behind the one in front of it and slides
+                  // down into place, so there are never more than 3 cards on screen
+                  initial={pilePose(position - 1)}
+                  animate={pilePose(position)}
                   exit="gone"
                   variants={{
                     gone: (dir: Direction) => ({
@@ -176,17 +182,18 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
                   >
                     {(overlay) => (
                       <MovieCard
-                        overlay={overlay}
-                        title={movie.title}
-                        genres={movie.genre}
-                        plot={movie.plot}
-                        imdbScore={movie.imdbScore}
-                        rottenTomatoesScore={movie.rottenTomatoesScore}
-                        posterUrl={movie.image}
-                        watched={cardStatus?.watched}
-                        bookmarked={cardStatus?.bookmarked}
-                        rating={cardStatus?.rating}
-                        details={movie}
+                        // overlay={overlay}
+                        movie={movie}
+                        // title={movie.title}
+                        // genres={movie.genre}
+                        // plot={movie.plot}
+                        // imdbScore={movie.imdbScore}
+                        // rottenTomatoesScore={movie.rottenTomatoesScore}
+                        // posterUrl={movie.image}
+                        // watched={cardStatus?.watched}
+                        // bookmarked={cardStatus?.bookmarked}
+                        // rating={cardStatus?.rating}
+                        // details={movie}
                         onRate={(rating) =>
                           updateStatus(movie.title, { watched: true, rating })
                         }
@@ -196,7 +203,7 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
                             rating: undefined,
                           })
                         }
-                        onToggleWannaWatch={() =>
+                        onToggleBookmark={() =>
                           updateStatus(movie.title, {
                             bookmarked: !cardStatus?.bookmarked,
                           })

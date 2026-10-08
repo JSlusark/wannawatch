@@ -8,11 +8,13 @@ import {
   useState,
   type PointerEvent,
   type ReactNode,
+  type Ref,
 } from "react";
 
+import type { Movie } from "@/data/movies";
 import { cn } from "@/lib/utils";
 
-import { StickerIcon, stickerButton, stickerShadow } from "./StickerIcon";
+import { StickerIcon, stickerButton } from "./StickerIcon";
 
 // From best (top of the card) to worst (bottom). The number is the score we store.
 const LEVELS = [
@@ -199,9 +201,9 @@ function LiquidRating({
             >
               <StickerIcon
                 icon={Check}
-                shape="line"
+                variant="default"
                 color="text-secondary"
-                className={cn("size-full", stickerShadow)}
+                className={cn("size-full")}
               />
             </button>
             <button
@@ -213,9 +215,9 @@ function LiquidRating({
             >
               <StickerIcon
                 icon={X}
-                shape="line"
+                variant="default"
                 color="text-card"
-                className={cn("size-full", stickerShadow)}
+                className={cn("size-full")}
               />
             </button>
           </span>
@@ -297,7 +299,7 @@ function DragHint({ fill, loop = false }: { fill: number; loop?: boolean }) {
         {/* A sticker hand like the buttons' icons: no circle behind it */}
         <StickerIcon
           icon={MousePointer2}
-          shape="filled"
+          variant="highlight"
           color="text-card"
           className="size-full drop-shadow-brutal-sm"
         />
@@ -458,7 +460,45 @@ function Liquid({ fill }: { fill: number }) {
   );
 }
 
+type BackCardProps = {
+  movie: Movie;
+  backRef: Ref<HTMLDivElement>;
+  flipped: boolean;
+  onClose: () => void;
+  onRate?: (rating: Rating) => void;
+};
+
+// BACK: the rating slider. Pre-rotated 180° so it faces you once the card turns
+function BackCard({ movie, backRef, flipped, onClose, onRate }: BackCardProps) {
+  return (
+    <div
+      ref={backRef}
+      inert={!flipped}
+      // Tells a swipe deck not to start a swipe here, so dragging the rating slider works
+      data-no-swipe
+      className="relative col-start-1 row-start-1 rotate-y-180 backface-hidden"
+    >
+      {/* @container: the back sizes its content by the card's width, like the front */}
+      <div className="@container relative isolate size-full overflow-hidden rounded-xl border-3 border-border bg-card">
+        {/* key: a new key = a fresh LiquidRating, so each flip starts from the saved
+            score and forgets any unconfirmed draft */}
+        <LiquidRating
+          key={String(flipped)}
+          title={movie.title}
+          active={flipped}
+          onConfirm={(score) => {
+            onClose();
+            onRate?.(score);
+          }}
+          onCancel={onClose}
+        />
+      </div>
+    </div>
+  );
+}
+
 export {
+  BackCard,
   DragHint,
   FILL,
   HINT_DELAY_MS,

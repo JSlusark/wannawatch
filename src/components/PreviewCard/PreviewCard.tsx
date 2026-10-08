@@ -4,7 +4,7 @@ import {
   MovieInfo,
   Poster,
   PosterFade,
-} from "@/components/MovieCard/MovieCard";
+} from "@/components/MovieCard/FrontCard";
 import { cn } from "@/lib/utils";
 
 type PreviewCardProps = {

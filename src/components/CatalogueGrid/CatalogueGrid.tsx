@@ -45,23 +45,17 @@ function CatalogueGrid({
         return (
           <li key={movie.title}>
             <MovieCard
-              title={movie.title}
-              genres={movie.genre}
-              plot={movie.plot}
-              imdbScore={movie.imdbScore}
-              rottenTomatoesScore={movie.rottenTomatoesScore}
-              posterUrl={movie.image}
-              watched={card?.watched}
-              bookmarked={card?.bookmarked}
-              rating={card?.rating}
-              details={movie}
+             movie={movie}
+              // watched={card?.watched}
+              // bookmarked={card?.bookmarked}
+              // rating={card?.rating}
               onRate={(rating) =>
                 update(movie.title, { watched: true, rating })
               }
               onUnwatch={() =>
                 update(movie.title, { watched: false, rating: undefined })
               }
-              onToggleWannaWatch={() =>
+              onToggleBookmark={() =>
                 update(movie.title, { bookmarked: !card?.bookmarked })
               }
               size="w-full"

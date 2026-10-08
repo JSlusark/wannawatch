@@ -1,14 +1,17 @@
 import { useEffect, useSyncExternalStore } from "react";
 
-// Only one MovieCard on the page may show its back (the rating side) at a time.
-// Flipping a card turns any other flipped card back to its front; that card's
-// unconfirmed rating is thrown away, so it doesn't count as watched.
-//
-// How: one small shared value outside React, "the id of the card that is flipped".
-// Every card subscribes to it with useSyncExternalStore (React's built-in way to read
-// a value that lives outside React), so when it changes, every card re-renders and
-// checks "is it me?". No provider or parent wiring needed: it works in every grid,
-// the swipe deck, and across the two lists on the profile page.
+/* 
+This hook is for the "flip to rate" feature of MovieCard. It ensures that only one card can be flipped at a time.
+
+Flipping a card turns any other flipped card back to its front; that card's
+unconfirmed rating is thrown away, so it doesn't count as watched.
+
+How: one small shared value outside React, "the id of the card that is flipped".
+Every card subscribes to it with useSyncExternalStore (React's built-in way to read
+a value that lives outside React), so when it changes, every card re-renders and
+checks "is it me?". No provider or parent wiring needed: it works in every grid,
+the swipe deck, and across the two lists on the profile page. 
+*/
 
 let flippedId: string | null = null;
 const listeners = new Set<() => void>();
@@ -26,7 +29,7 @@ function subscribe(notify: () => void) {
 }
 
 /** Works like useState(false) for "is this card flipped?", but only one card can be true */
-function useSingleFlip(id: string) {
+export default function useSingleFlip(id: string) {
   const flipped =
     useSyncExternalStore(
       subscribe,
