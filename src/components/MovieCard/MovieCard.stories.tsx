@@ -211,6 +211,40 @@ export const BookmarkStates: Story = {
   ),
 };
 
+// What the card looks like when data is missing: first the poster link can't be found,
+// then nothing about the movie can be found at all
+export const MissingData: Story = {
+  name: "Missing data",
+  parameters: { layout: "padded", controls: { disable: true } },
+  render: () => (
+    <StateGrid
+      cards={[
+        {
+          id: "no-poster",
+          caption: "No poster",
+          movie: { ...movie, image: "" },
+        },
+        {
+          id: "no-data",
+          caption: "No movie data",
+          movie: {
+            title: "",
+            imdbScore: 0,
+            rottenTomatoesScore: 0,
+            genre: [],
+            plot: "",
+            isWatched: false,
+            watchScore: null,
+            isBookmarked: false,
+            image: "",
+            year: 0,
+          },
+        },
+      ]}
+    />
+  ),
+};
+
 // The back on its own: drag the liquid (or use the arrow keys) to pick a score.
 // Confirm and Cancel only show up in the Actions panel: there's no card here to turn.
 export const BackInteractive: Story = {
