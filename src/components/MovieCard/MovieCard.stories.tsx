@@ -155,7 +155,7 @@ export const FrontInteractive: Story = {
   },
   // Clicking ✓ turns it on without turning the card: no rating slider appears
   play: async ({ canvas, userEvent }) => {
-    const watched = canvas.getByRole("button", { name: "Watched" });
+    const watched = canvas.getByRole("button", { name: "Not watched" });
     await userEvent.click(watched);
     await expect(watched).toHaveAttribute("aria-pressed", "true");
     await expect(canvas.queryByRole("slider")).toBeNull();

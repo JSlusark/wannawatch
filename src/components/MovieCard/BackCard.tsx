@@ -14,7 +14,7 @@ import {
 import type { Movie } from "@/data/movies";
 import { cn } from "@/lib/utils";
 
-import { StickerIcon, stickerButton } from "./StickerIcon";
+import { StickerIcon, stickerButtonClass } from "./StickerIcon";
 
 // From best (top of the card) to worst (bottom). The number is the score we store.
 const LEVELS = [
@@ -197,7 +197,7 @@ function LiquidRating({
               aria-label="Confirm"
               title="Confirm"
               onClick={() => onConfirm(draft)}
-              className={cn(actionSize, stickerButton)}
+              className={cn(actionSize, stickerButtonClass)}
             >
               <StickerIcon
                 icon={Check}
@@ -211,7 +211,7 @@ function LiquidRating({
               aria-label="Cancel"
               title="Cancel"
               onClick={onCancel}
-              className={cn(actionSize, stickerButton)}
+              className={cn(actionSize, stickerButtonClass)}
             >
               <StickerIcon
                 icon={X}

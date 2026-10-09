@@ -1,10 +1,7 @@
 import { useId } from "react";
 
-import {
-  MovieInfo,
-  Poster,
-  PosterFade,
-} from "@/components/MovieCard/FrontCard";
+import { MovieInfo } from "@/components/MovieCard/MovieInfo";
+import { Poster, PosterLowOverlay } from "@/components/MovieCard/Poster";
 import { cn } from "@/lib/utils";
 
 type PreviewCardProps = {
@@ -40,12 +37,11 @@ function PreviewCard({
       )}
     >
       <Poster url={posterUrl} />
-      <PosterFade />
+      <PosterLowOverlay />
       <MovieInfo
         titleId={titleId}
         title={title}
         genres={genres}
-        synopsis={plot}
         imdbScore={imdbScore}
         rottenTomatoesScore={rottenTomatoesScore}
       />
