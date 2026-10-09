@@ -92,7 +92,7 @@ export const Card: Story = {
           args.onRate?.(rating);
         }}
         onUnwatch={() => {
-          setCurrent((m) => ({ ...m, isWatched: false, watchScore: undefined }));
+          setCurrent((m) => ({ ...m, isWatched: false, watchScore: null }));
           args.onUnwatch?.();
         }}
         onToggleBookmark={() => {
@@ -100,7 +100,7 @@ export const Card: Story = {
           setCurrent((m) =>
             m.isBookmarked
               ? { ...m, isBookmarked: false }
-              : { ...m, isBookmarked: true, isWatched: false, watchScore: undefined },
+              : { ...m, isBookmarked: true, isWatched: false, watchScore: null },
           );
           args.onToggleBookmark?.();
         }}
@@ -118,8 +118,8 @@ export const Card: Story = {
   },
 };
 
-// Just the front, with working buttons: ✓ marks it watched (without a score) and the
-// bookmark adds it to WannaWatch. The card never turns, so there's no rating here.
+// Just the front, with working buttons: ✓ marks it watched and the bookmark adds it to
+// WannaWatch. The card never turns, so the score is a fixed "It's ok" (0).
 export const FrontInteractive: Story = {
   parameters: { controls: { disable: true } },
   render: function Render(args) {
@@ -135,8 +135,8 @@ export const FrontInteractive: Story = {
             // Watched takes the movie off the WannaWatch list
             setCurrent((m) =>
               m.isWatched
-                ? { ...m, isWatched: false, watchScore: undefined }
-                : { ...m, isWatched: true, watchScore: undefined, isBookmarked: false },
+                ? { ...m, isWatched: false, watchScore: null }
+                : { ...m, isWatched: true, watchScore: 0, isBookmarked: false },
             );
             action("onToggleWatch")();
           }}
@@ -145,7 +145,7 @@ export const FrontInteractive: Story = {
             setCurrent((m) =>
               m.isBookmarked
                 ? { ...m, isBookmarked: false }
-                : { ...m, isBookmarked: true, isWatched: false, watchScore: undefined },
+                : { ...m, isBookmarked: true, isWatched: false, watchScore: null },
             );
             args.onToggleBookmark?.();
           }}
