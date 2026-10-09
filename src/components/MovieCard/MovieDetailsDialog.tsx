@@ -2,12 +2,12 @@ import { Dialog } from "@base-ui/react/dialog";
 import { X } from "lucide-react";
 import Image from "next/image";
 
-import { GenreList } from "@/components/GenreList";
+import { GenreList } from "@/components/movie/GenreList";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Movie } from "@/data/movies";
 
-import { ImdbIcon, TomatoIcon } from "./RatingIcons";
+import { ImdbIcon, TomatoIcon } from "@/components/movie/Ratings";
 
 
       // <MovieDetailsDialog

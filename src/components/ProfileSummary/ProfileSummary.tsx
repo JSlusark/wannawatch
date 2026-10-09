@@ -1,4 +1,4 @@
-import { GenreList } from "@/components/GenreList";
+import { GenreList } from "@/components/movie/GenreList";
 import { Badge } from "@/components/ui/badge";
 import type { UserProfile } from "@/data/user";
 import { cn } from "@/lib/utils";

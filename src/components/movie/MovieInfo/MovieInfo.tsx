@@ -1,6 +1,6 @@
-import { GenreList } from "@/components/GenreList";
+import { GenreList } from "@/components/movie/GenreList";
 
-import { Ratings } from "./Ratings";
+import { Ratings } from "@/components/movie/Ratings";
 
 type MovieInfoProps = {
   titleId: string;

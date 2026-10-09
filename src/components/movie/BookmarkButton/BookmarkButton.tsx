@@ -7,7 +7,7 @@ import {
   posterButtonClass,
   stickerButtonClass,
   stickerSize,
-} from "./StickerIcon";
+} from "@/components/StickerIcon";
 
 type BookmarkButtonProps = {
   bookmarked: boolean;

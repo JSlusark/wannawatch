@@ -2,13 +2,13 @@
 
 import { useRef, type Ref } from "react";
 
+import { BookmarkButton } from "@/components/movie/BookmarkButton";
+import { MovieInfo } from "@/components/movie/MovieInfo";
+import { Poster } from "@/components/movie/Poster";
+import { WatchedButton } from "@/components/movie/WatchedButton";
 import type { Movie } from "@/data/movies";
 
 import type { Rating } from "./BackCard";
-import { BookmarkButton } from "./BookmarkButton";
-import { MovieInfo } from "./MovieInfo";
-import { Poster } from "./Poster";
-import { WatchedButton } from "./WatchedButton";
 
 type FrontCardProps = {
   movie: Movie;

@@ -1,7 +1,7 @@
 import { useId } from "react";
 
-import { MovieInfo } from "@/components/MovieCard/MovieInfo";
-import { Poster, PosterLowOverlay } from "@/components/MovieCard/Poster";
+import { MovieInfo } from "@/components/movie/MovieInfo";
+import { Poster, PosterLowOverlay } from "@/components/movie/Poster";
 import { cn } from "@/lib/utils";
 
 type PreviewCardProps = {

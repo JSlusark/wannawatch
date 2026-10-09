@@ -9,7 +9,7 @@ import {
   posterButtonClass,
   stickerButtonClass,
   stickerSize,
-} from "./StickerIcon";
+} from "@/components/StickerIcon";
 
 
 type WatchScore = 2 | 1 | 0 | -1 | -2;

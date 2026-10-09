@@ -14,7 +14,7 @@ import {
 import type { Movie } from "@/data/movies";
 import { cn } from "@/lib/utils";
 
-import { StickerIcon, stickerButtonClass } from "./StickerIcon";
+import { StickerIcon, stickerButtonClass } from "@/components/StickerIcon";
 
 // From best (top of the card) to worst (bottom). The number is the score we store.
 const LEVELS = [
