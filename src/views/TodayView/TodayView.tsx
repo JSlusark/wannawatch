@@ -2,8 +2,10 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SwipeDeck } from "@/components/SwipeDeck";
 import { movies } from "@/data/movies";
 
-// Today's 10 movies (the mock data has exactly 10 for now)
-const TODAYS_MOVIES = movies.slice(0, 10);
+// Today's 10 suggestions: only movies you haven't watched or added to WannaWatch yet
+const TODAYS_MOVIES = movies
+  .filter((movie) => !movie.isWatched && !movie.isBookmarked)
+  .slice(0, 10);
 
 // Today's WannaWatch: a pile of 10 cards to swipe through.
 function TodayView() {

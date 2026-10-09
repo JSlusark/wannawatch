@@ -16,14 +16,17 @@ import {
 import {
   useEffect,
   useEffectEvent,
+  useRef,
   useState,
   type PointerEvent,
   type ReactNode,
 } from "react";
+import { flushSync } from "react-dom";
 
 import { LogoEye } from "@/components/Logo";
-import { MovieCard, MovieDetailsContent } from "@/components/MovieCard";
+import { MovieDetailsContent, type Rating } from "@/components/MovieCard";
 import { useMovieStatuses } from "@/components/CatalogueGrid/useMovieStatuses";
+import { SuggestionCard } from "@/components/SuggestionCard";
 import { Button } from "@/components/ui/button";
 import type { Movie } from "@/data/movies";
 import { cn } from "@/lib/utils";
@@ -62,6 +65,9 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
   const [direction, setDirection] = useState<Direction>(1); // where the last card flew
   const [leaving, setLeaving] = useState<Direction | null>(null); // arrow key pressed, card on its way out
   const [announcement, setAnnouncement] = useState("");
+  // true while the top card shows its back, after "I already watched this movie"
+  const [isRating, setIsRating] = useState(false);
+  const alreadyWatchedRef = useRef<HTMLButtonElement>(null);
   const { statuses: status, update: updateStatus } = useMovieStatuses(movies);
 
   // How far the top card is dragged (shared with the coloured background)
@@ -81,14 +87,36 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
         ? `Added ${current.title} to your WannaWatch list`
         : `Passed on ${current.title}`,
     );
-    setDirection(choice);
+    nextCard(choice);
+  }
+
+  // Rated on the back: it's watched now, so it's no longer a suggestion and leaves the pile
+  function rateWatched(rating: Rating) {
+    if (!current) return;
+    updateStatus(current.title, { watched: true, rating });
+    setAnnouncement(`Marked ${current.title} as watched`);
+    nextCard(-1);
+  }
+
+  // The top card flies off that way and the next one comes forward
+  function nextCard(dir: Direction) {
+    setDirection(dir);
     setLeaving(null);
     setIndex((i) => i + 1);
     animate(dragX, 0, { duration: 0.3 });
   }
 
+  // The back closed (Confirm or Cancel): bring focus back to the link that opened it.
+  // flushSync updates the page right away, so the link is visible again before we focus it
+  // (a hidden element can't take focus).
+  function closeRating() {
+    flushSync(() => setIsRating(false));
+    alreadyWatchedRef.current?.focus();
+  }
+
   function startOver() {
     setIndex(0);
+    setIsRating(false);
     setAnnouncement("Starting over");
   }
 
@@ -135,7 +163,12 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
           aria-label="Movie deck. Press the left arrow to pass or the right arrow to WannaWatch."
           onKeyDown={(event) => {
             // Only when the deck itself has focus, so the rating slider keeps its arrow keys
-            if (event.target !== event.currentTarget || leaving !== null)
+            // and not while the top card shows its rating side
+            if (
+              event.target !== event.currentTarget ||
+              leaving !== null ||
+              isRating
+            )
               return;
             if (event.key === "ArrowLeft") setLeaving(-1);
             if (event.key === "ArrowRight") setLeaving(1);
@@ -148,7 +181,6 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
           <AnimatePresence custom={direction} initial={false}>
             {pile.map((movie, position) => {
               const isTop = position === 0;
-              const cardStatus = status[movie.title];
               return (
                 <motion.div
                   key={movie.title}
@@ -175,39 +207,18 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
                   aria-hidden={!isTop}
                 >
                   <SwipeableCard
-                    enabled={isTop}
+                    enabled={isTop && !isRating}
                     leaving={isTop ? leaving : null}
                     dragX={dragX}
                     onDecide={decide}
                   >
                     {(overlay) => (
-                      <MovieCard
-                        // overlay={overlay}
+                      <SuggestionCard
                         movie={movie}
-                        // title={movie.title}
-                        // genres={movie.genre}
-                        // plot={movie.plot}
-                        // imdbScore={movie.imdbScore}
-                        // rottenTomatoesScore={movie.rottenTomatoesScore}
-                        // posterUrl={movie.image}
-                        // watched={cardStatus?.watched}
-                        // bookmarked={cardStatus?.bookmarked}
-                        // rating={cardStatus?.rating}
-                        // details={movie}
-                        onRate={(rating) =>
-                          updateStatus(movie.title, { watched: true, rating })
-                        }
-                        onUnwatch={() =>
-                          updateStatus(movie.title, {
-                            watched: false,
-                            rating: undefined,
-                          })
-                        }
-                        onToggleBookmark={() =>
-                          updateStatus(movie.title, {
-                            bookmarked: !cardStatus?.bookmarked,
-                          })
-                        }
+                        overlay={overlay}
+                        flipped={isTop && isRating}
+                        onClose={closeRating}
+                        onRate={rateWatched}
                         size="w-[clamp(12rem,calc((100dvh-16rem)*0.533),20.8rem)]"
                       />
                     )}
@@ -217,6 +228,17 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
             })}
           </AnimatePresence>
         </div>
+
+        {/* Outside the card: turns the top card to its back to rate it instead.
+            invisible while the back shows (it would do nothing), but it keeps its space. */}
+        <Button
+          ref={alreadyWatchedRef}
+          variant="link"
+          onClick={() => setIsRating(true)}
+          className={cn(isRating && "invisible")}
+        >
+          I already watched this movie
+        </Button>
       </div>
 
       {/* Plain text next to the deck, no box. It follows the top card. */}
