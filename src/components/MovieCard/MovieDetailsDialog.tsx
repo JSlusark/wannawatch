@@ -44,7 +44,7 @@ function formatRuntime(minutes: number) {
 }
 
 // Everything you'd want to know about a movie. Used in the pop-up (inDialog, with the
-// poster) and next to the deck on the Today page (plain, no boxes).
+// poster) and next to the deck on the Daily Picks page (plain, no boxes).
 function MovieDetailsContent({
   inDialog = false,
   title,

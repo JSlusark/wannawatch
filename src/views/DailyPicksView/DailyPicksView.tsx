@@ -3,12 +3,12 @@ import { SwipeDeck } from "@/components/SwipeDeck";
 import { movies } from "@/data/movies";
 
 // Today's 10 suggestions: only movies you haven't watched or added to WannaWatch yet
-const TODAYS_MOVIES = movies
+const DAILY_PICKS = movies
   .filter((movie) => !movie.isWatched && !movie.isBookmarked)
   .slice(0, 10);
 
 // Today's WannaWatch: a pile of 10 cards to swipe through.
-function TodayView() {
+function DailyPicksView() {
   return (
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />
@@ -22,10 +22,10 @@ function TodayView() {
           </h1>
           <p className="mt-3 text-lg font-medium">Your daily wanna watch</p>
         </div>
-        <SwipeDeck movies={TODAYS_MOVIES} />
+        <SwipeDeck movies={DAILY_PICKS} />
       </main>
     </div>
   );
 }
 
-export { TodayView };
+export { DailyPicksView };

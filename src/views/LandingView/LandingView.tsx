@@ -10,8 +10,8 @@ const PREVIEW_MOVIES = movies.slice(0, 5);
 // Words repeated in the band at the bottom (decoration only)
 const BAND_WORDS = ["Swipe", "Watch", "Rate", "Repeat"];
 
-// The welcome (hero) page: big title on the left, a shuffling pile of movie cards on the right.
-function WelcomeView() {
+// The landing (hero) page: big title on the left, a shuffling pile of movie cards on the right.
+function LandingView() {
   return (
     <div className="flex min-h-dvh flex-col overflow-x-clip">
       <header className="px-6 py-3 sm:px-12">
@@ -89,4 +89,4 @@ function Star({ className }: { className?: string }) {
   );
 }
 
-export { WelcomeView };
+export { LandingView };

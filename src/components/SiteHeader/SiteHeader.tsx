@@ -9,12 +9,12 @@ import { cn } from "@/lib/utils";
 
 const LINKS = [
   { href: "/catalogue", label: "Movie Catalogue" },
-  { href: "/today", label: "Today's WannaWatch" },
+  { href: "/daily", label: "Today's WannaWatch" },
 ];
 
-// Top bar of the app pages: logo (back to the welcome page), main navigation, profile.
+// Top bar of the app pages: logo (back to the landing page), main navigation, profile.
 function SiteHeader() {
-  const pathname = usePathname(); // the current URL path, e.g. "/today"
+  const pathname = usePathname(); // the current URL path, e.g. "/daily"
 
   return (
     <header className="flex flex-wrap items-center gap-x-8 gap-y-3 px-6 py-3 sm:px-10">

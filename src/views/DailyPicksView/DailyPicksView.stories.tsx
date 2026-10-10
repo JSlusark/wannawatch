@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { WelcomeView } from "./WelcomeView";
+import { DailyPicksView } from "./DailyPicksView";
 
 const meta = {
-  title: "Pages/Welcome",
-  component: WelcomeView,
+  title: "Pages/Daily Picks",
+  component: DailyPicksView,
   parameters: {
     layout: "fullscreen",
     // Pretend we're on this URL, so the menu highlights the right link
-    nextjs: { appDirectory: true, navigation: { pathname: "/" } },
+    nextjs: { appDirectory: true, navigation: { pathname: "/daily" } },
   },
-} satisfies Meta<typeof WelcomeView>;
+} satisfies Meta<typeof DailyPicksView>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
