@@ -21,8 +21,3 @@ npm run typecheck         # TypeScript, no emit
 npm run test               # Vitest (unit tests + Storybook story tests)
 npm run format             # Prettier
 ```
-
-## Docs
-
-- [`docs/adr/`](docs/adr) — architecture decision records
-- [`docs/instructions.md`](docs/instructions.md) — project setup and workflow notes
