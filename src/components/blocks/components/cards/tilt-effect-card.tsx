@@ -62,7 +62,7 @@ export default function TiltEffectCard() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">
-              Your new project will be created with the latest version of our
+              Your new project will be created with the latest version of the
               framework, complete with authentication, database, and API routes.
             </p>
           </CardContent>

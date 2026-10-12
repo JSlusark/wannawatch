@@ -53,7 +53,7 @@
    Contrast notes: ink text works on 100–500 of every ramp. For coloured *text* on a light
    background use 700 or darker (all pass 4.5:1 on cream). On the dark background use 300–500. */
 @theme {
-  /* Remove Tailwind's own lime/purple/orange/pink so only our shades exist */
+  /* Remove Tailwind's own lime/purple/orange/pink so only the shades exist */
   --color-lime-*: initial;
   --color-purple-*: initial;
   --color-orange-*: initial;

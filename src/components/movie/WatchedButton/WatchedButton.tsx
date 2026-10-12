@@ -39,8 +39,8 @@ function WatchedButton({
 }: WatchedButtonProps) {
   const displayedScore = WATCH_SCORES.find((item) => item.score === watchScore); // undefined for non-watched movies
 
-  console.log("WatchedButton props:", { isWatched, watchScore, onToggle });
-  console.log("Level found:", displayedScore);
+  // console.log("WatchedButton props:", { isWatched, watchScore, onToggle });
+  // console.log("Score found:", displayedScore);
   return (
     <button
       ref={ref}
