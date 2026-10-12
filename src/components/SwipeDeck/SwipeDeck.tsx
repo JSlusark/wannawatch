@@ -25,7 +25,7 @@ import { flushSync } from "react-dom";
 
 import { LogoEye } from "@/components/Logo";
 import { MovieDetailsContent, type Rating } from "@/components/MovieCard";
-import { useMovieStatuses } from "@/components/CatalogueGrid/useMovieStatuses";
+import { useUserMovies } from "@/components/CatalogueGrid/useUserMovies";
 import { SuggestionCard } from "@/components/SuggestionCard";
 import { Button } from "@/components/ui/button";
 import type { Movie } from "@/data/movies";
@@ -68,20 +68,20 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
   // true while the top card shows its back, after "I already watched this movie"
   const [isRating, setIsRating] = useState(false);
   const alreadyWatchedRef = useRef<HTMLButtonElement>(null);
-  const { statuses: status, update: updateStatus } = useMovieStatuses(movies);
+  const { userMovies, update: updateUserMovie } = useUserMovies();
 
   // How far the top card is dragged (shared with the coloured background)
   const dragX = useMotionValue(0);
   const current = movies[index];
   const pile = movies.slice(index, index + VISIBLE_CARDS);
   const wannaWatchCount = movies.filter(
-    (m) => status[m.title]?.bookmarked,
+    (m) => userMovies[m.id]?.bookmarked,
   ).length;
 
   // The top card has finished its swipe: record the choice and bring the next card forward
   function decide(choice: Direction) {
     if (!current) return;
-    if (choice === 1) updateStatus(current.title, { bookmarked: true });
+    if (choice === 1) updateUserMovie(current.id, { bookmarked: true });
     setAnnouncement(
       choice === 1
         ? `Added ${current.title} to your WannaWatch list`
@@ -93,7 +93,7 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
   // Rated on the back: it's watched now, so it's no longer a suggestion and leaves the pile
   function rateWatched(rating: Rating) {
     if (!current) return;
-    updateStatus(current.title, { watched: true, rating });
+    updateUserMovie(current.id, { watched: true, rating });
     setAnnouncement(`Marked ${current.title} as watched`);
     nextCard(-1);
   }
@@ -183,7 +183,7 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
               const isTop = position === 0;
               return (
                 <motion.div
-                  key={movie.title}
+                  key={movie.id}
                   className="col-start-1 row-start-1"
                   // originY 1 = shrink towards the bottom edge, so the step down is exactly PILE_STEP
                   style={{ zIndex: VISIBLE_CARDS - position, originY: 1 }}

@@ -7,28 +7,27 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Movie } from "@/data/movies";
 
-import { ImdbIcon, TomatoIcon } from "@/components/movie/Ratings";
+import { ImdbIcon, NoScore, TomatoIcon } from "@/components/movie/Ratings";
 
-
-      // <MovieDetailsDialog
-      //   open={detailsOpen}
-      //   onOpenChange={setDetailsOpen}
-      //   title={movie.title}
-      //   genres={movie.genre}
-      //   plot={movie.plot}
-      //   imdbScore={movie.imdbScore}
-      //   rottenTomatoesScore={movie.rottenTomatoesScore}
-      //   posterUrl={movie.image}
-      //   // details={details}
-      // />
+// <MovieDetailsDialog
+//   open={detailsOpen}
+//   onOpenChange={setDetailsOpen}
+//   title={movie.title}
+//   genres={movie.genre}
+//   plot={movie.plot}
+//   imdbScore={movie.imdbScore}
+//   rottenTomatoesScore={movie.rottenTomatoesScore}
+//   posterUrl={movie.image}
+//   // details={details}
+// />
 
 type MovieDetailsProps = {
   title: string;
   genres: string[];
   plot: string;
-  imdbScore: number;
-  rottenTomatoesScore: number;
-  posterUrl?: string;
+  imdbScore: number | null;
+  rottenTomatoesScore: number | null;
+  posterUrl?: string | null;
   details?: Movie;
 };
 
@@ -94,12 +93,16 @@ function MovieDetailsContent({
             <span className="flex items-center gap-2">
               <ImdbIcon />
               <span className="sr-only">IMDb rating </span>
-              {imdbScore.toFixed(1)}/10
+              {imdbScore === null ? <NoScore /> : `${imdbScore.toFixed(1)}/10`}
             </span>
             <span className="flex items-center gap-2">
               <TomatoIcon />
               <span className="sr-only">Rotten Tomatoes score </span>
-              {rottenTomatoesScore}%
+              {rottenTomatoesScore === null ? (
+                <NoScore />
+              ) : (
+                `${rottenTomatoesScore}%`
+              )}
             </span>
           </p>
         </div>

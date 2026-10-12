@@ -2,22 +2,21 @@
 
 import { AdvancedSearchCallout } from "@/components/AdvancedSearchCallout";
 import { CatalogueGrid } from "@/components/CatalogueGrid";
-import { useMovieStatuses } from "@/components/CatalogueGrid/useMovieStatuses";
+import { useUserMovies } from "@/components/CatalogueGrid/useUserMovies";
 import { CollectionPanel } from "@/components/CollectionPanel";
 import { ProfileSummary } from "@/components/ProfileSummary";
 import { SiteHeader } from "@/components/SiteHeader";
 import { movies } from "@/data/movies";
 import { user } from "@/data/user";
+import { mockUserMovies } from "@/data/userMovies";
 
 // The profile: your info and taste on top, then your two collections side by side
 // (Watched on the left, WannaWatch on the right).
 function ProfileView() {
   // One shared record for both lists, so a movie can move from one to the other
-  const { statuses, update } = useMovieStatuses(movies);
-  const watched = movies.filter((movie) => statuses[movie.title]?.watched);
-  const wannaWatch = movies.filter(
-    (movie) => statuses[movie.title]?.bookmarked,
-  );
+  const { userMovies, update } = useUserMovies(mockUserMovies);
+  const watched = movies.filter((movie) => userMovies[movie.id]?.watched);
+  const wannaWatch = movies.filter((movie) => userMovies[movie.id]?.bookmarked);
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -35,7 +34,7 @@ function ProfileView() {
           >
             <CatalogueGrid
               movies={watched}
-              statuses={statuses}
+              userMovies={userMovies}
               onUpdate={update}
               className="grid-cols-[repeat(auto-fill,minmax(max(9.8rem,calc((100%_-_2rem)/3)),1fr))] gap-x-4 gap-y-6"
             />
@@ -48,7 +47,7 @@ function ProfileView() {
           >
             <CatalogueGrid
               movies={wannaWatch}
-              statuses={statuses}
+              userMovies={userMovies}
               onUpdate={update}
               className="grid-cols-[repeat(auto-fill,minmax(max(9.8rem,calc((100%_-_2rem)/3)),1fr))] gap-x-4 gap-y-6"
             />

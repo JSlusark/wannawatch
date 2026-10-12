@@ -5,6 +5,7 @@ import { expect, fn } from "storybook/test";
 
 import mockMovieData from "@/data/mockData.json";
 import type { Movie } from "@/data/movies";
+import type { UserMovie } from "@/data/userMovies";
 
 import {
   HINT_DELAY_MS,
@@ -15,8 +16,11 @@ import {
 import { FrontCard } from "./FrontCard";
 import { MovieCard } from "./MovieCard";
 
-// Mandy: not watched, not bookmarked
+// Mandy
 const movie = mockMovieData[0] as Movie;
+
+// Not watched, not bookmarked
+const NOT_IN_LISTS: UserMovie = { watched: false, bookmarked: false };
 
 // From best to worst, like on the back of the card
 const RATINGS: Rating[] = [2, 1, 0, -1, -2];
@@ -40,10 +44,19 @@ type Story = StoryObj<typeof meta>;
 
 // A front that only shows a state: no tilt, no flip, nothing to click.
 // inert = the browser ignores clicks and Tab inside it.
-function StaticFront({ movie, id }: { movie: Movie; id: string }) {
+function StaticFront({
+  movie,
+  userMovie,
+  id,
+}: {
+  movie: Movie;
+  userMovie?: UserMovie;
+  id: string;
+}) {
   return (
     <FrontCard
       movie={movie}
+      userMovie={userMovie}
       titleId={id}
       inert
       watchedRef={null}
@@ -56,15 +69,21 @@ function StaticFront({ movie, id }: { movie: Movie; id: string }) {
 function StateGrid({
   cards,
 }: {
-  cards: { id: string; caption: string; movie: Movie }[];
+  cards: { id: string; caption: string; movie: Movie; userMovie?: UserMovie }[];
 }) {
   return (
     <ul className="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-6">
       {cards.map((card) => (
         <li key={card.id}>
           <figure className="flex flex-col gap-2">
-            <StaticFront id={card.id} movie={card.movie} />
-            <figcaption className="font-mono text-sm">{card.caption}</figcaption>
+            <StaticFront
+              id={card.id}
+              movie={card.movie}
+              userMovie={card.userMovie}
+            />
+            <figcaption className="font-mono text-sm">
+              {card.caption}
+            </figcaption>
           </figure>
         </li>
       ))}
@@ -76,31 +95,28 @@ function StateGrid({
 // bookmark to add it to WannaWatch. The story remembers what you do, like a page would.
 export const Card: Story = {
   render: function Render(args) {
-    const [current, setCurrent] = useState(args.movie);
+    const [userMovie, setUserMovie] = useState<UserMovie>(
+      args.userMovie ?? NOT_IN_LISTS,
+    );
     return (
       <MovieCard
         {...args}
-        movie={current}
+        userMovie={userMovie}
         onRate={(rating) => {
           // Watched takes the movie off the WannaWatch list
-          setCurrent((m) => ({
-            ...m,
-            isWatched: true,
-            watchScore: rating,
-            isBookmarked: false,
-          }));
+          setUserMovie({ watched: true, bookmarked: false, rating });
           args.onRate?.(rating);
         }}
         onUnwatch={() => {
-          setCurrent((m) => ({ ...m, isWatched: false, watchScore: null }));
+          setUserMovie((s) => ({ ...s, watched: false, rating: undefined }));
           args.onUnwatch?.();
         }}
         onToggleBookmark={() => {
           // Bookmarking makes it "not watched yet" again
-          setCurrent((m) =>
-            m.isBookmarked
-              ? { ...m, isBookmarked: false }
-              : { ...m, isBookmarked: true, isWatched: false, watchScore: null },
+          setUserMovie((s) =>
+            s.bookmarked
+              ? { ...s, bookmarked: false }
+              : { watched: false, bookmarked: true },
           );
           args.onToggleBookmark?.();
         }}
@@ -123,29 +139,30 @@ export const Card: Story = {
 export const FrontInteractive: Story = {
   parameters: { controls: { disable: true } },
   render: function Render(args) {
-    const [current, setCurrent] = useState(args.movie);
+    const [userMovie, setUserMovie] = useState<UserMovie>(NOT_IN_LISTS);
     return (
       <div className="w-90">
         <FrontCard
-          movie={current}
+          movie={args.movie}
+          userMovie={userMovie}
           titleId="front"
           inert={false}
           watchedRef={null}
           onToggleWatch={() => {
             // Watched takes the movie off the WannaWatch list
-            setCurrent((m) =>
-              m.isWatched
-                ? { ...m, isWatched: false, watchScore: null }
-                : { ...m, isWatched: true, watchScore: 0, isBookmarked: false },
+            setUserMovie((s) =>
+              s.watched
+                ? { ...s, watched: false, rating: undefined }
+                : { watched: true, bookmarked: false, rating: 0 },
             );
             action("onToggleWatch")();
           }}
           onToggleBookmark={() => {
             // Bookmarking makes it "not watched yet" again
-            setCurrent((m) =>
-              m.isBookmarked
-                ? { ...m, isBookmarked: false }
-                : { ...m, isBookmarked: true, isWatched: false, watchScore: null },
+            setUserMovie((s) =>
+              s.bookmarked
+                ? { ...s, bookmarked: false }
+                : { watched: false, bookmarked: true },
             );
             args.onToggleBookmark?.();
           }}
@@ -172,17 +189,14 @@ export const WatchStates: Story = {
         {
           id: "not-watched",
           caption: "Not watched",
-          movie: { ...movie, isWatched: false, isBookmarked: false },
+          movie,
+          userMovie: NOT_IN_LISTS,
         },
         ...RATINGS.map((rating) => ({
           id: `watched-${rating}`,
           caption: ratingLabel(rating),
-          movie: {
-            ...movie,
-            isWatched: true,
-            watchScore: rating,
-            isBookmarked: false,
-          },
+          movie,
+          userMovie: { watched: true, bookmarked: false, rating },
         })),
       ]}
     />
@@ -199,12 +213,14 @@ export const BookmarkStates: Story = {
         {
           id: "not-bookmarked",
           caption: "Not bookmarked",
-          movie: { ...movie, isWatched: false, isBookmarked: false },
+          movie,
+          userMovie: NOT_IN_LISTS,
         },
         {
           id: "bookmarked",
           caption: "Bookmarked",
-          movie: { ...movie, isWatched: false, isBookmarked: true },
+          movie,
+          userMovie: { watched: false, bookmarked: true },
         },
       ]}
     />
@@ -212,7 +228,7 @@ export const BookmarkStates: Story = {
 };
 
 // What the card looks like when data is missing: first the poster link can't be found,
-// then nothing about the movie can be found at all
+// then there are no scores (the API doesn't always have them), then nothing at all
 export const MissingData: Story = {
   name: "Missing data",
   parameters: { layout: "padded", controls: { disable: true } },
@@ -222,22 +238,25 @@ export const MissingData: Story = {
         {
           id: "no-poster",
           caption: "No poster",
-          movie: { ...movie, image: "" },
+          movie: { ...movie, image: null },
+        },
+        {
+          id: "no-scores",
+          caption: "No scores",
+          movie: { ...movie, imdbScore: null, rottenTomatoesScore: null },
         },
         {
           id: "no-data",
           caption: "No movie data",
           movie: {
+            id: 0,
             title: "",
-            imdbScore: 0,
-            rottenTomatoesScore: 0,
+            imdbScore: null,
+            rottenTomatoesScore: null,
             genre: [],
             plot: "",
-            isWatched: false,
-            watchScore: null,
-            isBookmarked: false,
-            image: "",
-            year: 0,
+            image: null,
+            year: null,
           },
         },
       ]}

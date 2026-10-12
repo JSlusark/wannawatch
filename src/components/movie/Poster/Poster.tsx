@@ -19,7 +19,8 @@ function PosterTopOverlay() {
   );
 }
 
-function Poster({ url }: { url?: string }) {
+// url missing or null = no poster: shows "Image not found" instead
+function Poster({ url }: { url?: string | null }) {
   if (!url) {
     return (
       <div

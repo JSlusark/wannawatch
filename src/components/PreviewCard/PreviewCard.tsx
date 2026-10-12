@@ -8,9 +8,9 @@ type PreviewCardProps = {
   title: string;
   genres: string[];
   plot: string;
-  imdbScore: number;
-  rottenTomatoesScore: number;
-  posterUrl?: string;
+  imdbScore: number | null;
+  rottenTomatoesScore: number | null;
+  posterUrl?: string | null;
   className?: string;
 };
 
