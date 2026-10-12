@@ -44,6 +44,9 @@ function Poster({ url }: { url?: string | null }) {
         alt=""
         fill
         sizes="(min-width: 768px) 22rem, 100vw"
+        // Posters from the movie API load straight in the browser: the API blocks the
+        // server-side resizer, and its posters are already small .webp files
+        unoptimized={url.startsWith("https://")}
         className="-z-10 object-cover"
       />
       <PosterTopOverlay />

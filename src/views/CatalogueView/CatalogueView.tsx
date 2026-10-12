@@ -1,10 +1,11 @@
 import { CatalogueGrid } from "@/components/CatalogueGrid";
 import { FilterBar } from "@/components/FilterBar";
 import { SiteHeader } from "@/components/SiteHeader";
-import { movies } from "@/data/movies";
+import type { Movie } from "@/data/movies";
 
 // The movie catalogue: title, filters (preview only) and every movie as a MovieCard.
-function CatalogueView() {
+// The page passes in the movies (from the movie API); Storybook passes mock ones.
+function CatalogueView({ movies }: { movies: Movie[] }) {
   return (
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />

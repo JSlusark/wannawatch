@@ -73,6 +73,7 @@ function MovieDetailsContent({
               alt=""
               fill
               sizes="8rem"
+              unoptimized={posterUrl.startsWith("https://")} // see Poster.tsx
               className="object-cover"
             />
           </div>
