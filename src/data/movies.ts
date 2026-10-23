@@ -19,6 +19,13 @@ export type Movie = {
   cast?: string[];
 };
 
+// One page of a long list of movies, plus where it sits in the list
+export type MoviePage = {
+  movies: Movie[];
+  page: number; // this page, starting at 1
+  totalPages: number;
+};
+
 // JSON numbers are always read as plain `number`, so this is the one place where we
 // tell TypeScript the file matches the Movie type
 export const movies = mockMovieData as Movie[];

@@ -5,21 +5,23 @@ import { connection } from "next/server";
 // The movie API we use (Trakt). Its address and header names are fixed by the service.
 const MOVIE_API_URL = "https://api.trakt.tv";
 
+// What comes back: the body (still unchecked) and the headers, which hold extra
+// information such as how many pages a list has
+type MovieApiResponse = { data: unknown; headers: Headers };
+
 // Layer 1: talks to the movie API. Every request needs the same address and the same
 // headers, so they live here and nowhere else.
 export async function requestMovieApi(
   path: string,
   params: Record<string, string> = {},
-): Promise<unknown> {
+): Promise<MovieApiResponse> {
   // Wait for a real visitor: `next build` stops here instead of calling the API while
   // building the site, so a page that uses the API is made fresh on every visit
   await connection();
 
   const apiKey = process.env.MOVIE_API_KEY;
   if (!apiKey) {
-    throw new Error(
-      "MOVIE_API_KEY is missing at env.local",
-    );
+    throw new Error("MOVIE_API_KEY is missing at env.local");
   }
 
   const url = new URL(path, MOVIE_API_URL);
@@ -49,5 +51,5 @@ export async function requestMovieApi(
       `Movie API ${path} failed: ${res.status} ${res.statusText}`,
     );
   }
-  return res.json();
+  return { data: await res.json(), headers: res.headers };
 }
