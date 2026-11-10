@@ -1,10 +1,11 @@
 import { SiteHeader } from "@/components/SiteHeader";
 import { SwipeDeck } from "@/components/SwipeDeck";
 import { movies } from "@/data/movies";
+import { mockUserMovies } from "@/data/userMovies";
 
 // Today's 10 suggestions: only movies you haven't watched or added to WannaWatch yet
 const DAILY_PICKS = movies
-  .filter((movie) => !movie.isWatched && !movie.isBookmarked)
+  .filter((movie) => !mockUserMovies[movie.id])
   .slice(0, 10);
 
 // Today's WannaWatch: a pile of 10 cards to swipe through.

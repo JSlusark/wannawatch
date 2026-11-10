@@ -6,8 +6,8 @@ type MovieInfoProps = {
   titleId: string;
   title: string;
   genres: string[];
-  imdbScore: number;
-  rottenTomatoesScore: number;
+  imdbScore: number | null;
+  rottenTomatoesScore: number | null;
 };
 
 // The text at the bottom of the card: ratings, then title and genres

@@ -1,2 +1,2 @@
 export { ImdbIcon, TomatoIcon } from "./RatingIcons";
-export { Ratings } from "./Ratings";
+export { NoScore, Ratings } from "./Ratings";

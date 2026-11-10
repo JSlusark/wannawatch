@@ -2,21 +2,18 @@
 
 import { MovieCard } from "@/components/MovieCard";
 import type { Movie } from "@/data/movies";
+import type { UserMovie, UserMovies } from "@/data/userMovies";
 import { cn } from "@/lib/utils";
 
-import {
-  useMovieStatuses,
-  type CardStatus,
-  type Statuses,
-} from "./useMovieStatuses";
+import { useUserMovies } from "./useUserMovies";
 
 type CatalogueGridProps = {
   movies: Movie[];
   className?: string;
-  /** Pass these two to let a parent own the statuses (the profile page shares them
+  /** Pass these two to let a parent own the lists (the profile page shares them
       between its two lists). Without them, the grid remembers them itself. */
-  statuses?: Statuses;
-  onUpdate?: (title: string, change: Partial<CardStatus>) => void;
+  userMovies?: UserMovies;
+  onUpdate?: (movieId: number, change: Partial<UserMovie>) => void;
 };
 
 // All catalogue movies as real MovieCards. Remembers what you mark (watched, score,
@@ -24,11 +21,11 @@ type CatalogueGridProps = {
 function CatalogueGrid({
   movies,
   className,
-  statuses,
+  userMovies,
   onUpdate,
 }: CatalogueGridProps) {
-  const own = useMovieStatuses(movies);
-  const status = statuses ?? own.statuses;
+  const own = useUserMovies();
+  const lists = userMovies ?? own.userMovies;
   const update = onUpdate ?? own.update;
 
   return (
@@ -41,22 +38,18 @@ function CatalogueGrid({
       )}
     >
       {movies.map((movie) => {
-        const card = status[movie.title];
+        const userMovie = lists[movie.id];
         return (
-          <li key={movie.title}>
+          <li key={movie.id}>
             <MovieCard
-             movie={movie}
-              // watched={card?.watched}
-              // bookmarked={card?.bookmarked}
-              // rating={card?.rating}
-              onRate={(rating) =>
-                update(movie.title, { watched: true, rating })
-              }
+              movie={movie}
+              userMovie={userMovie}
+              onRate={(rating) => update(movie.id, { watched: true, rating })}
               onUnwatch={() =>
-                update(movie.title, { watched: false, rating: undefined })
+                update(movie.id, { watched: false, rating: undefined })
               }
               onToggleBookmark={() =>
-                update(movie.title, { bookmarked: !card?.bookmarked })
+                update(movie.id, { bookmarked: !userMovie?.bookmarked })
               }
               size="w-full"
             />
