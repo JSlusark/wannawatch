@@ -67,7 +67,7 @@ function ShuffleStack({ movies, className }: ShuffleStackProps) {
 
           return (
             <motion.div
-              key={movie.title}
+              key={movie.id}
               className="col-start-1 row-start-1"
               initial={false}
               animate={

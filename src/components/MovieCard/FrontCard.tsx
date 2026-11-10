@@ -7,11 +7,14 @@ import { MovieInfo } from "@/components/movie/MovieInfo";
 import { Poster } from "@/components/movie/Poster";
 import { WatchedButton } from "@/components/movie/WatchedButton";
 import type { Movie } from "@/data/movies";
+import type { UserMovie } from "@/data/userMovies";
 
 import type { Rating } from "./BackCard";
 
 type FrontCardProps = {
   movie: Movie;
+  /** Missing = not watched, not bookmarked */
+  userMovie?: UserMovie;
   titleId: string;
   /** true while the card shows its back: the front can't be clicked or tabbed to */
   inert: boolean;
@@ -23,6 +26,7 @@ type FrontCardProps = {
 // FRONT: poster, Watched and Bookmark buttons, ratings, title and genres
 function FrontCard({
   movie,
+  userMovie,
   titleId,
   inert,
   watchedRef,
@@ -46,10 +50,10 @@ function FrontCard({
     >
       <Poster url={movie.image} />
       <CardButtons
-        watched={movie.isWatched}
-        rating={movie?.watchScore}
+        watched={userMovie?.watched ?? false}
+        rating={userMovie?.rating ?? null}
         watchedRef={watchedRef}
-        bookmarked={movie.isBookmarked}
+        bookmarked={userMovie?.bookmarked ?? false}
         onToggleWatched={onToggleWatch}
         onToggleBookmark={onToggleBookmark}
       />

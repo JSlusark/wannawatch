@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 import type { Movie } from "@/data/movies";
+import type { UserMovie } from "@/data/userMovies";
 import { cn } from "@/lib/utils";
 
 import { BackCard, type Rating } from "./BackCard";
@@ -12,6 +13,8 @@ import { useSingleFlip, useTilt } from "./hooks";
 
 type MovieCardProps = {
   movie: Movie;
+  /** What the user did with this movie. Missing = not watched, not bookmarked */
+  userMovie?: UserMovie;
   // hooks for the card's state
   onRate?: (rating: Rating) => void;
   onUnwatch?: () => void;
@@ -21,6 +24,7 @@ type MovieCardProps = {
 
 function MovieCard({
   movie,
+  userMovie,
   onRate,
   onUnwatch,
   onToggleBookmark,
@@ -79,12 +83,13 @@ function MovieCard({
       >
         <FrontCard
           movie={movie}
+          userMovie={userMovie}
           titleId={titleId}
           inert={isFlipped}
           watchedRef={watchedRef}
           onToggleWatch={() => {
             // Not watched yet → turn the card to rate it. Already watched → un-mark it.
-            if (movie.isWatched) onUnwatch?.();
+            if (userMovie?.watched) onUnwatch?.();
             else setIsFlipped(true);
           }}
           onToggleBookmark={onToggleBookmark}
