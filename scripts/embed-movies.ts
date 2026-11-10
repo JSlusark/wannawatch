@@ -1,6 +1,8 @@
 // Embed script: gives every movie without a vector its embedding (384 numbers).
 // Run it with `npm run db:embed`. Safe to run again: only movies without a vector are
 // picked, so after a new seed it embeds just the new ones.
+// `npm run db:embed -- --all` redoes every movie: needed after changing the recipe
+// (movieText.ts) or the model, so all vectors are made the same way again.
 
 import { eq, isNull } from "drizzle-orm";
 
@@ -13,20 +15,21 @@ import { connectDb } from "./db";
 const BATCH_SIZE = 32; // movies sent to the model at once (faster than one by one)
 
 async function main() {
+  // --all after `npm run db:embed --` → redo every movie, not only the empty ones
+  const redoAll = process.argv.includes("--all");
   const { db, close } = connectDb();
 
   try {
-    // Only the columns the text needs, only movies that have no vector yet
+    // Only the columns the text needs. Normally only movies with no vector yet
     const todo = await db
       .select({
         id: movies.id,
         title: movies.title,
-        year: movies.year,
         genres: movies.genres,
         plot: movies.plot,
       })
       .from(movies)
-      .where(isNull(movies.embedding));
+      .where(redoAll ? undefined : isNull(movies.embedding));
 
     console.log(`${todo.length} movies to embed with ${EMBEDDING_MODEL}`);
 

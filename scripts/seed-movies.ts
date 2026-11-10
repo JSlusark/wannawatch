@@ -1,4 +1,5 @@
-// Seed script: fills the movies table with the most watched movies of all time.
+// Seed script: fills the movies table with every movie in the movie API's "most watched
+// of all time" list, page by page until the list ends (about 29,000 movies).
 // Run it with `npm run db:seed`. Safe to run again: movies already saved are skipped.
 
 import type { Movie } from "@/data/movies";
@@ -9,13 +10,11 @@ import { apiWatchedMoviesSchema } from "@/server/movieApi/schemas";
 
 import { connectDb } from "./db";
 
-const TARGET = 2000; // how many movies to fetch
 const PER_PAGE = 100; // movies per request
 const PAUSE_MS = 1000; // wait between requests, to stay far below the API's limit
 
-// One page of the most watched movies of all time: well-known movies from every era.
-// (Not "popular" like the catalogue: that list stops at about 480 movies.)
-async function fetchMostWatchedMovies(page: number) {
+// One page of the most watched movies of all time
+async function fetchMostWatchedPage(page: number) {
   const { data, headers } = await requestMovieApi("/movies/watched/all", {
     extended: "full", // full info: plot, runtime, genres, images
     page: String(page),
@@ -23,9 +22,11 @@ async function fetchMostWatchedMovies(page: number) {
   });
 
   return {
+    // This list wraps each movie: { watcher_count, …, movie: { … } }
     movies: apiWatchedMoviesSchema
       .parse(data)
       .map((item) => normalizeMovie(item.movie)),
+    // The API puts the number of pages in a header (0 or missing → count 1)
     totalPages: Number(headers.get("X-Pagination-Page-Count")) || 1,
   };
 }
@@ -45,13 +46,13 @@ function toRow(movie: Movie): NewMovieRow {
 
 async function main() {
   const { db, close } = connectDb();
-  const pages = Math.ceil(TARGET / PER_PAGE);
   let saved = 0;
-  let skipped = 0;
 
   try {
-    for (let page = 1; page <= pages; page++) {
-      const result = await fetchMostWatchedMovies(page);
+    // No fixed number of pages: keep going until the list says it has no more
+    for (let page = 1; ; page++) {
+      const result = await fetchMostWatchedPage(page);
+      const pages = result.totalPages;
 
       // Save the page in one go. A movie whose trakt_id is already in the table is
       // skipped instead of causing an error. `returning` gives back only the new rows.
@@ -62,15 +63,12 @@ async function main() {
         .returning({ id: movies.id });
 
       saved += inserted.length;
-      skipped += result.movies.length - inserted.length;
-      console.log(
-        `Page ${page}/${pages}: ${inserted.length} saved, ${result.movies.length - inserted.length} already there`,
-      );
+      console.log(`Page ${page}/${pages}: ${inserted.length} new movies saved`);
 
-      if (page >= result.totalPages) break; // the API has no more pages
+      if (page >= pages) break; // the list has no more pages
       await new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
     }
-    console.log(`Done: ${saved} new movies saved, ${skipped} skipped.`);
+    console.log(`Done: ${saved} new movies saved.`);
   } finally {
     await close(); // always close the connection, even after an error
   }

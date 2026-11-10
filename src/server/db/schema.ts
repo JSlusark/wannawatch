@@ -7,7 +7,7 @@ import {
   vector,
 } from "drizzle-orm/pg-core";
 
-// How many numbers the embedding model gives for every text. all-MiniLM-L6-v2
+// How many numbers the embedding model gives for every text. bge-small-en-v1.5
 // always gives 384. If the model changes, this changes too and every movie is
 // embedded again (vectors from different models can't be compared).
 export const EMBEDDING_DIMENSIONS = 384;
