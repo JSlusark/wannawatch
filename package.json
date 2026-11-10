@@ -52,6 +52,7 @@
     "eslint-plugin-storybook": "^10.6.0",
     "husky": "^9.1.7",
     "jsdom": "^30.1.1",
+    "lint-staged": "^17.6.0",
     "playwright": "latest",
     "prettier": "^3.9.9",
     "storybook": "^10.6.0",
@@ -59,5 +60,13 @@
     "typescript": "^5",
     "vite": "latest",
     "vitest": "latest"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write",
+      "vitest related --run --passWithNoTests"
+    ],
+    "*.{js,mjs,css,json,md}": "prettier --write"
   }
 }
