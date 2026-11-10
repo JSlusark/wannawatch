@@ -1,4 +1,6 @@
-import "server-only";
+import "server-only"; // build error if a browser component ever imports this file
+
+import { connection } from "next/server";
 
 import type { MoviePage } from "@/data/movies";
 
@@ -12,6 +14,10 @@ const PAGE_SIZE = 20;
 // Layer 4: what pages call. Ask the movie API for one page of popular movies → check
 // the shape → translate each movie → the movies, plus how many pages there are.
 export async function getPopularMovies(page = 1): Promise<MoviePage> {
+  // Wait for a real visitor: `next build` stops here instead of calling the API while
+  // building the site, so a page that uses the API is made fresh on every visit
+  await connection();
+
   const { data, headers } = await requestMovieApi("/movies/popular", {
     extended: "full", // full info: plot, runtime, genres, images
     page: String(page),
