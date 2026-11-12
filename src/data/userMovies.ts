@@ -12,15 +12,16 @@ type UserMovie = {
 // Every movie the user did something with, by movie id
 type UserMovies = Record<number, UserMovie>;
 
-// Mock lists of the mock user (no database yet), for the profile and the Daily 10
+// Mock lists of the mock user (no database yet), for the profile and the Daily 10.
+// The keys are the movie API's ids, like every Movie id (see mockData.json)
 const mockUserMovies: UserMovies = {
-  2: { watched: false, bookmarked: true }, // Paprika
-  3: { watched: true, bookmarked: false, rating: 2 }, // The Big Short
-  5: { watched: true, bookmarked: false, rating: 1 }, // Home Alone
-  6: { watched: true, bookmarked: false, rating: 0 }, // Meet the Parents
-  7: { watched: true, bookmarked: false, rating: -1 }, // Gladiator
-  8: { watched: false, bookmarked: true }, // Project Hail Mary
-  9: { watched: true, bookmarked: false, rating: -2 }, // Sorry to Bother You
+  2909: { watched: false, bookmarked: true }, // Paprika
+  199563: { watched: true, bookmarked: false, rating: 2 }, // The Big Short
+  614: { watched: true, bookmarked: false, rating: 1 }, // Home Alone
+  1052: { watched: true, bookmarked: false, rating: 0 }, // Meet the Parents
+  67: { watched: true, bookmarked: false, rating: -1 }, // Gladiator
+  531178: { watched: false, bookmarked: true }, // Project Hail Mary
+  269566: { watched: true, bookmarked: false, rating: -2 }, // Sorry to Bother You
 };
 
 // One movie in the user's library: the movie itself (so the profile can show its card)

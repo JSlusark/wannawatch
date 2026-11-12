@@ -7,9 +7,9 @@ import { mockUserMovies } from "@/data/userMovies";
 import { MovieView } from "./MovieView";
 
 // Mandy: a mock movie with every detail filled in (director, cast, long plot)
-const mandy = movies.find((movie) => movie.id === 1)!;
+const mandy = movies.find((movie) => movie.title === "Mandy")!;
 // Paprika: on the mock user's WannaWatch list
-const paprika = movies.find((movie) => movie.id === 2)!;
+const paprika = movies.find((movie) => movie.title === "Paprika")!;
 
 const meta = {
   title: "Pages/Movie",
@@ -18,7 +18,7 @@ const meta = {
   args: { movie: mandy, userMovies: mockUserMovies, save: fn() },
   parameters: {
     layout: "fullscreen",
-    nextjs: { appDirectory: true, navigation: { pathname: "/movie/1" } },
+    nextjs: { appDirectory: true, navigation: { pathname: "/movie/308070" } },
   },
 } satisfies Meta<typeof MovieView>;
 

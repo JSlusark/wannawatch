@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef } from "react";
 
 import type { Movie } from "@/data/movies";
 import type { UserMovie } from "@/data/userMovies";
@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 
 import { BackCard, type Rating } from "./BackCard";
 import { FrontCard } from "./FrontCard";
-import { MovieDetailsDialog } from "./MovieDetailsDialog";
 import { useSingleFlip, useTilt } from "./hooks";
 
 type MovieCardProps = {
@@ -20,6 +19,8 @@ type MovieCardProps = {
   onUnwatch?: () => void;
   onToggleBookmark?: () => void;
   size?: string;
+  /** Where clicking the card goes (the movie's page). Missing = not clickable */
+  href?: string;
 };
 
 function MovieCard({
@@ -29,6 +30,7 @@ function MovieCard({
   onUnwatch,
   onToggleBookmark,
   size: size,
+  href,
 }: MovieCardProps) {
   const titleId = useId(); // used to recognised the flipped card and for accessibility
   const [isFlipped, setIsFlipped] = useSingleFlip(titleId);
@@ -93,6 +95,7 @@ function MovieCard({
             else setIsFlipped(true);
           }}
           onToggleBookmark={onToggleBookmark}
+          href={href}
         />
         <BackCard
           movie={movie}

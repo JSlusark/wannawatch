@@ -1,6 +1,7 @@
 import { GenreList } from "@/components/movie/GenreList";
 
 import { Ratings } from "@/components/movie/Ratings";
+import { cn } from "@/lib/utils";
 
 type MovieInfoProps = {
   titleId: string;
@@ -8,6 +9,7 @@ type MovieInfoProps = {
   genres: string[];
   imdbScore: number | null;
   rottenTomatoesScore: number | null;
+  className?: string;
 };
 
 // The text at the bottom of the card: ratings, then title and genres
@@ -17,9 +19,15 @@ function MovieInfo({
   genres,
   imdbScore,
   rottenTomatoesScore,
+  className,
 }: MovieInfoProps) {
   return (
-    <div className="relative flex flex-col gap-4 px-3 pt-6 pb-4 text-on-media @3xs:px-4 @3xs:pb-6 @xs:px-5 @xs:pb-8">
+    <div
+      className={cn(
+        "relative flex flex-col gap-4 px-3 pt-6 pb-4 text-on-media @3xs:px-4 @3xs:pb-6 @xs:px-5 @xs:pb-8",
+        className,
+      )}
+    >
       <Ratings
         imdbScore={imdbScore}
         rottenTomatoesScore={rottenTomatoesScore}

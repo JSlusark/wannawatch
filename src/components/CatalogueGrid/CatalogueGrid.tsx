@@ -2,6 +2,7 @@
 
 import { MovieCard } from "@/components/MovieCard";
 import type { Movie } from "@/data/movies";
+import { movieHref } from "@/lib/routes";
 import type {
   SaveUserMovie,
   UserMovieChange,
@@ -25,7 +26,7 @@ type CatalogueGridProps = {
   save?: SaveUserMovie;
 };
 
-// All catalogue movies as real MovieCards. Remembers what you mark (watched, score,
+// All catalogue movies as real MovieCards; clicking one opens its movie page. Remembers what you mark (watched, score,
 // bookmark), and hands each change to `save` so the other pages see it too.
 function CatalogueGrid({
   movies,
@@ -56,6 +57,7 @@ function CatalogueGrid({
               movie={movie}
               userMovie={userMovie}
               {...cardActions(movie, userMovie, update)}
+              href={movieHref(movie.id)}
               size="w-full"
             />
           </li>
