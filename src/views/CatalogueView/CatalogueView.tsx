@@ -9,6 +9,14 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import type { MoviePage } from "@/data/movies";
+import type { SaveUserMovie, UserMovies } from "@/data/userMovies";
+
+type CatalogueViewProps = MoviePage & {
+  /** What the user already marked, so the cards open with the right state */
+  userMovies?: UserMovies;
+  /** Where each mark is saved (the server's mock library). Storybook leaves it out */
+  save?: SaveUserMovie;
+};
 
 // The address of one catalogue page. Page 1 is just /catalogue, without "?page=1"
 function pageHref(page: number) {
@@ -18,7 +26,13 @@ function pageHref(page: number) {
 // The movie catalogue: title, filters (preview only), one page of movies as MovieCards,
 // and links to the pages before and after.
 // The page passes in the movies (from the movie API); Storybook passes mock ones.
-function CatalogueView({ movies, page, totalPages }: MoviePage) {
+function CatalogueView({
+  movies,
+  page,
+  totalPages,
+  userMovies,
+  save,
+}: CatalogueViewProps) {
   return (
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />
@@ -36,7 +50,11 @@ function CatalogueView({ movies, page, totalPages }: MoviePage) {
           </p>
         </div>
         <FilterBar />
-        <CatalogueGrid movies={movies} />
+        <CatalogueGrid
+          movies={movies}
+          initialUserMovies={userMovies}
+          save={save}
+        />
 
         {totalPages > 1 && (
           <Pagination>

@@ -1,0 +1,18 @@
+# Local database for development, run with Docker (`npm run db:up`).
+services:
+  db:
+  # official Postgres image with the pgvector extension already installed and ready to use
+    image: pgvector/pgvector:pg17
+    environment:
+      # No secrets added for now
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dbname
+    ports:
+      - "5432:5432" # Postgres's usual port on localhost:5432
+    volumes:
+      # Keeps the data when the container stops or restarts
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:

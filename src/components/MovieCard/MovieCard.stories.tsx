@@ -6,6 +6,7 @@ import { expect, fn } from "storybook/test";
 import mockMovieData from "@/data/mockData.json";
 import type { Movie } from "@/data/movies";
 import type { UserMovie } from "@/data/userMovies";
+import { movieHref } from "@/lib/routes";
 
 import {
   HINT_DELAY_MS,
@@ -130,6 +131,29 @@ export const Card: Story = {
 
     await userEvent.click(bookmark);
     await expect(bookmark).toHaveAttribute("aria-pressed", "true");
+    await expect(args.onToggleBookmark).toHaveBeenCalledOnce();
+  },
+};
+
+// A card in a grid: clicking anywhere opens the movie's page (a link covers the card).
+// The Watched and Bookmark buttons sit on top of the link, so they still do their own job.
+export const Clickable: Story = {
+  args: { href: movieHref(movie.id) },
+  play: async ({ args, canvas, userEvent }) => {
+    // One link, named after the movie, going to its page
+    const link = canvas.getByRole("link", { name: movie.title });
+    await expect(link).toHaveAttribute("href", movieHref(movie.id));
+
+    // Keyboard (from the top of the page): the link comes first, then the two buttons
+    await userEvent.tab();
+    await expect(link).toHaveFocus();
+    await userEvent.tab();
+    await expect(
+      canvas.getByRole("button", { name: "Not watched" }),
+    ).toHaveFocus();
+
+    // Clicking the bookmark toggles it, it doesn't follow the link
+    await userEvent.click(canvas.getByRole("button", { name: "Bookmarked" }));
     await expect(args.onToggleBookmark).toHaveBeenCalledOnce();
   },
 };

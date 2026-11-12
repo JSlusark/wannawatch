@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { saveUserMovie } from "@/server/actions/userMovies";
 import { getPopularMovies, toPageNumber } from "@/server/movies";
+import { getUserMovies } from "@/server/userLibrary";
 import { CatalogueView } from "@/views/CatalogueView";
 
 // The browser tab title (every page needs its own, WCAG 2.4.2)
@@ -16,7 +18,11 @@ type PageProps = {
 // secret key never reaches the browser
 export default async function Page({ searchParams }: PageProps) {
   const page = toPageNumber((await searchParams).page);
-  const moviePage = await getPopularMovies(page);
+  // Both at the same time: neither waits for the other
+  const [moviePage, userMovies] = await Promise.all([
+    getPopularMovies(page),
+    getUserMovies(),
+  ]);
   console.log(
     "Catalogue page",
     page,
@@ -31,5 +37,11 @@ export default async function Page({ searchParams }: PageProps) {
     redirect("/catalogue");
   }
 
-  return <CatalogueView {...moviePage} />;
+  return (
+    <CatalogueView
+      {...moviePage}
+      userMovies={userMovies}
+      save={saveUserMovie}
+    />
+  );
 }
