@@ -12,15 +12,15 @@ const LINKS = [
   { href: "/daily", label: "Today's WannaWatch" },
 ];
 
-// Top bar of the app pages: logo (back to the landing page), main navigation, profile.
+// Top bar of the app pages: logo (back to the catalogue), main navigation, profile.
 function SiteHeader() {
   const pathname = usePathname(); // the current URL path, e.g. "/daily"
 
   return (
     <header className="flex flex-wrap items-center gap-x-8 gap-y-3 px-6 py-3 sm:px-10">
       <Link
-        href="/"
-        aria-label="WannaWatch home"
+        href="/catalogue"
+        aria-label="WannaWatch, go to the movie catalogue"
         className="rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring"
       >
         <Logo />
