@@ -31,3 +31,12 @@ export type ApiMovie = z.infer<typeof apiMovieSchema>;
 export const apiWatchedMoviesSchema = z.array(
   z.object({ movie: apiMovieSchema }),
 );
+
+// /movies/{id}/ratings?extended=all: the movie's scores on other sites. Only the two we
+// show; each can be missing for movies those sites don't know.
+export const apiRatingsSchema = z.object({
+  imdb: z.object({ rating: z.number().nullish() }).nullish(), // 8.5 (out of 10)
+  rotten_tomatoes: z.object({ rating: z.number().nullish() }).nullish(), // 99 (%)
+});
+
+export type ApiRatings = z.infer<typeof apiRatingsSchema>;

@@ -2,8 +2,8 @@
 // of all time" list, page by page until the list ends (about 29,000 movies).
 // Run it with `npm run db:seed`. Safe to run again: movies already saved are skipped.
 
-import type { Movie } from "@/data/movies";
-import { movies, type NewMovieRow } from "@/server/db/schema";
+import { toRow } from "@/server/db/movieRows";
+import { movies } from "@/server/db/schema";
 import { normalizeMovie } from "@/server/movieApi/normalizeMovie";
 import { requestMovieApi } from "@/server/movieApi/request";
 import { apiWatchedMoviesSchema } from "@/server/movieApi/schemas";
@@ -28,19 +28,6 @@ async function fetchMostWatchedPage(page: number) {
       .map((item) => normalizeMovie(item.movie)),
     // The API puts the number of pages in a header (0 or missing → count 1)
     totalPages: Number(headers.get("X-Pagination-Page-Count")) || 1,
-  };
-}
-
-// The app's Movie → a row for the movies table (the names differ a little)
-function toRow(movie: Movie): NewMovieRow {
-  return {
-    traktId: movie.id,
-    title: movie.title,
-    year: movie.year,
-    runtime: movie.runtime ?? null,
-    plot: movie.plot || null, // "" (no plot) is saved as empty
-    posterUrl: movie.image,
-    genres: movie.genre,
   };
 }
 

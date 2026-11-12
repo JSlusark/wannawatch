@@ -10,6 +10,7 @@ import { toPositiveInteger } from "@/lib/urlParams";
 
 import { MovieApiError, requestMovieApi } from "./movieApi/request";
 import { apiMovieSchema, apiMoviesSchema } from "./movieApi/schemas";
+import { withScores } from "./scores";
 
 // How many movies one page shows
 const PAGE_SIZE = 20;
@@ -28,7 +29,7 @@ export async function getPopularMovies(page = 1): Promise<MoviePage> {
   });
 
   return {
-    movies: apiMoviesSchema.parse(data).map(normalizeMovie),
+    movies: await withScores(apiMoviesSchema.parse(data).map(normalizeMovie)),
     page,
     // The API puts the number of pages in a header. If it's missing (or 0, which the
     // API sends for a page past the end), count 1, so "Next" never leads nowhere
@@ -46,7 +47,10 @@ export const getMovie = cache(async (id: number): Promise<Movie | null> => {
     const { data } = await requestMovieApi(`/movies/${id}`, {
       extended: "full",
     });
-    return normalizeMovie(apiMovieSchema.parse(data));
+    const [movie] = await withScores([
+      normalizeMovie(apiMovieSchema.parse(data)),
+    ]);
+    return movie ?? null;
   } catch (error) {
     if (error instanceof MovieApiError && error.status === 404) return null;
     throw error; // anything else is a real problem: show the error page
