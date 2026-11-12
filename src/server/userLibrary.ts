@@ -16,6 +16,10 @@ import { db } from "@/server/db";
 import { cardColumns, toMovie, toRow } from "@/server/db/movieRows";
 import { movies } from "@/server/db/schema";
 import { withScores } from "@/server/scores";
+import {
+  getStaticMoviesByIds,
+  USE_STATIC_MOVIES,
+} from "@/server/static/queries";
 
 // The mock user's library. Only the MARKS are mock: which movies they watched or
 // bookmarked, and their score. They live in the server's memory, so every page sees the
@@ -49,6 +53,14 @@ export async function getLibrary(): Promise<LibraryEntry[]> {
   const ids = [...marks.keys()];
   if (ids.length === 0) return [];
 
+  // The file already has the scores, and it's already in the marks' order
+  if (USE_STATIC_MOVIES) {
+    return getStaticMoviesByIds(ids).map((movie) => ({
+      movie,
+      userMovie: marks.get(movie.id)!,
+    }));
+  }
+
   const rows = await db
     .select(cardColumns)
     .from(movies)
@@ -69,6 +81,7 @@ export async function getLibrary(): Promise<LibraryEntry[]> {
 // shows passes through withScores, which saves it).
 export async function updateLibrary(movie: Movie, change: UserMovieChange) {
   marks.set(movie.id, applyUserMovieChange(marks.get(movie.id), change));
+  if (USE_STATIC_MOVIES) return; // the file can't be added to: every movie is in it
   await db
     .insert(movies)
     .values(toRow(movie))

@@ -10,6 +10,11 @@ import { toPositiveInteger } from "@/lib/urlParams";
 
 import { MovieApiError, requestMovieApi } from "./movieApi/request";
 import { apiMovieSchema, apiMoviesSchema } from "./movieApi/schemas";
+import {
+  getStaticMovie,
+  getStaticPopularMovies,
+  USE_STATIC_MOVIES,
+} from "./static/queries";
 import { withScores } from "./scores";
 
 // How many movies one page shows
@@ -21,6 +26,7 @@ export async function getPopularMovies(page = 1): Promise<MoviePage> {
   // Wait for a real visitor: `next build` stops here instead of calling the API while
   // building the site, so a page that uses the API is made fresh on every visit
   await connection();
+  if (USE_STATIC_MOVIES) return getStaticPopularMovies(page);
 
   const { data, headers } = await requestMovieApi("/movies/popular", {
     extended: "full", // full info: plot, runtime, genres, images
@@ -43,6 +49,7 @@ export async function getPopularMovies(page = 1): Promise<MoviePage> {
 // API is only called once (React remembers the answer until the visit is over).
 export const getMovie = cache(async (id: number): Promise<Movie | null> => {
   await connection();
+  if (USE_STATIC_MOVIES) return getStaticMovie(id);
   try {
     const { data } = await requestMovieApi(`/movies/${id}`, {
       extended: "full",

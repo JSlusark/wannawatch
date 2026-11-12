@@ -8,6 +8,10 @@ import { db } from "@/server/db";
 import { cardColumns, toMovie } from "@/server/db/movieRows";
 import { movies } from "@/server/db/schema";
 import { withScores } from "@/server/scores";
+import {
+  getStaticDailyPicks,
+  USE_STATIC_MOVIES,
+} from "@/server/static/queries";
 
 // How many movies the Daily 10 has
 const DAILY_COUNT = 10;
@@ -23,6 +27,7 @@ const MIN_RUNTIME_MINUTES = 60;
 export async function getDailyPicks(skip: number[]): Promise<Movie[]> {
   // A new draw on every visit, never one fixed at build time
   await connection();
+  if (USE_STATIC_MOVIES) return getStaticDailyPicks(skip);
 
   const rows = await db
     .select(cardColumns)

@@ -8,6 +8,10 @@ import { toMovie } from "@/server/db/movieRows";
 import { movies } from "@/server/db/schema";
 import { findSimilarMovies } from "@/server/embeddings/similarMovies";
 import { withScores } from "@/server/scores";
+import {
+  getStaticSimilarMovies,
+  USE_STATIC_MOVIES,
+} from "@/server/static/queries";
 
 // How many recommendations the movie page shows
 const SIMILAR_COUNT = 10;
@@ -18,6 +22,7 @@ const SIMILAR_COUNT = 10;
 export async function getSimilarMovies(
   movieId: number,
 ): Promise<SimilarMovies> {
+  if (USE_STATIC_MOVIES) return getStaticSimilarMovies(movieId);
   try {
     const [movie] = await db
       .select({
