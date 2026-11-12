@@ -22,7 +22,17 @@ npm run test               # Vitest (unit tests + Storybook story tests)
 npm run format             # Prettier
 ```
 
-## Docs
+## Where the movies come from
 
-- [`docs/adr/`](docs/adr) — architecture decision records
-- [`docs/instructions.md`](docs/instructions.md) — project setup and workflow notes
+By default the app reads its movies from one file in the code, `src/data/staticMovies.json`
+(about 500 popular movies with posters, scores and plot vectors). It needs no database and
+no API key, which is how the deployed site runs.
+
+To use the local database and the movie API instead, add this line to `.env.local`
+(with `DATABASE_URL` and `MOVIE_API_KEY`, and Docker running: `npm run db:up`):
+
+```bash
+MOVIE_SOURCE=live
+```
+
+To refresh the file from the database and the movie API: `npm run export:static`.

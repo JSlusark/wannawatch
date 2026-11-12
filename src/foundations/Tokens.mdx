@@ -1,0 +1,425 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+import { useEffect, useRef, useState } from 'react'
+
+<Meta title="Foundations/Tokens" />
+
+{/* ─── Helpers for this page ───────────────────────────────────────────────
+  Every class name below is written out in full (never built from pieces like `bg-${x}`):
+  Tailwind finds classes by reading the file as text, so a class it can't read doesn't exist. */}
+
+export const Code = ({ children }) => (
+  <code className="rounded-sm bg-muted px-1 py-0.5 font-mono text-xs break-words text-foreground">{children}</code>
+)
+
+{/* Reads the real value of a CSS variable from the page, so it is always up to date with globals.css.
+  It reads it where it is drawn, so inside the dark preview it shows the dark value. */}
+export const Live = ({ name }) => {
+  const ref = useRef(null)
+  const [value, setValue] = useState('')
+  useEffect(() => {
+    setValue(getComputedStyle(ref.current).getPropertyValue(name).trim())
+  }, [name])
+  return <span ref={ref} className="mt-1 block font-mono text-[11px] break-words text-muted-foreground">{value || '…'}</span>
+}
+
+{/* One colour of a ramp: the colour, its Tailwind name, its variable and its value */}
+export const Swatch = ({ cls, name, token }) => (
+  <div className="overflow-hidden rounded-lg border-2 border-border bg-card">
+    <div className={`${cls} h-14 border-b-2 border-border`} />
+    <div className="space-y-1 p-2">
+      <p className="font-mono text-xs font-bold">{name}</p>
+      <Code>{token}</Code>
+      <Live name={token} />
+    </div>
+  </div>
+)
+
+export const Ramp = ({ title, children }) => (
+  <div className="mb-6">
+    <p className="mb-2 font-mono text-xs font-bold tracking-wider uppercase">{title}</p>
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-3">{children}</div>
+  </div>
+)
+
+{/* One theme token: name and where to change it on the left, the light and dark previews on the right.
+  The dark preview is wrapped in a "dark" class, which switches every theme variable inside it. */}
+export const ThemeRow = ({ cls, token, light, dark, preview, live = true, children = 'Aa' }) => (
+  <div className="grid gap-3 border-b-2 border-border py-3 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)]">
+    <div className="space-y-1">
+      <p className="font-mono text-sm font-bold">{cls}</p>
+      <p className="text-xs">Variable: <Code>{token}</Code></p>
+      <p className="text-xs text-muted-foreground">Light → <Code>{light}</Code> · Dark → <Code>{dark}</Code></p>
+    </div>
+    <div className="rounded-lg bg-background p-2 text-foreground">
+      <div className={`${preview} grid h-12 place-items-center rounded-md font-bold`}>{children}</div>
+      {live && <div className="mt-3"><Live name={token} /></div>}
+    </div>
+    <div className="dark rounded-lg bg-background p-2 text-foreground">
+      <div className={`${preview} grid h-12 place-items-center rounded-md font-bold`}>{children}</div>
+      {live && <div className="mt-3"><Live name={token} /></div>}
+    </div>
+  </div>
+)
+
+{/* A row for everything that isn't a colour: preview, Tailwind class, variable, value */}
+export const TokenRow = ({ cls, token, note, children }) => (
+  <div className="grid items-center gap-3 border-b-2 border-border py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+    <div className="min-w-0">{children}</div>
+    <div className="space-y-1">
+      <p className="font-mono text-sm font-bold">{cls}</p>
+      {token && <p className="text-xs">Variable: <Code>{token}</Code></p>}
+      {token && <Live name={token} />}
+      {note && <p className="text-xs text-muted-foreground">{note}</p>}
+    </div>
+  </div>
+)
+
+{/* Storybook's MDX doesn't understand Markdown tables (| a | b |), so tables are drawn here */}
+export const Table = ({ head, rows }) => (
+  <table className="my-4 w-full border-collapse text-left text-sm">
+    <thead>
+      <tr>{head.map((h) => <th key={h} className="border-b-3 border-border py-2 pr-4 font-mono text-xs uppercase">{h}</th>)}</tr>
+    </thead>
+    <tbody>
+      {rows.map((row, i) => (
+        <tr key={i}>{row.map((cell, j) => <td key={j} className="border-b-2 border-border py-2 pr-4 align-top">{cell}</td>)}</tr>
+      ))}
+    </tbody>
+  </table>
+)
+
+# Tokens
+
+A **design token** is a named design decision: "the lime of the brand", "the big hard shadow".
+Each one is a CSS variable in `src/app/globals.css`, and Tailwind turns it into class names.
+Change the variable and every component that uses the class changes with it.
+
+Neobrutalism: flat colour, pitch-black outlines, hard shadows with no blur. Rules live in `docs/design/design-direction.md`.
+
+## How to read this page
+
+Every token shows three names:
+
+<div className="sb-unstyled not-prose">
+  <Table
+    head={['What', 'Example', 'Where you use it']}
+    rows={[
+      [<b>Tailwind class</b>, <Code>bg-lime-500</Code>, <>In <Code>className</Code> on a component</>],
+      [<b>CSS variable (the token)</b>, <Code>--color-lime-500</Code>, <>In <Code>globals.css</Code>, to change the value. In CSS: <Code>var(--color-lime-500)</Code></>],
+      [<b>Value</b>, <Code>oklch(0.938 0.22 120.9)</Code>, 'Read live from the page, so it is always the current one'],
+    ]}
+  />
+</div>
+
+**Colour classes.** The variable `--color-NAME` gives you every colour class, not only `bg-`:
+`bg-NAME` (fill), `text-NAME` (text), `border-NAME`, `ring-NAME`, `outline-NAME`, `fill-NAME` and `stroke-NAME` (SVG icons), `decoration-NAME` (underlines).
+Add `/50` for 50% opacity, e.g. `bg-lime-500/50`. The cards below show `bg-` for fills and `text-` for text colours.
+
+**Where to change what.**
+- Colour ramps, shadows, motion: the `@theme` block. Same in light and dark.
+- Theme colours (background, primary…): `:root` for light and `.dark` for dark. They point at ramp colours.
+- Font families and radius scale: the `@theme inline` block. *Inline* means "read the value where it's used", which is what lets theme colours switch with dark mode.
+
+## Colour ramps
+
+Same in light and dark. Every colour has 9 shades: **100** is the lightest, **500** is the
+brand colour (the button fill), **900** the darkest. Pick from these; never invent a shade.
+
+- Ink text works on 100–500 of every ramp (white on purple 500 and darker).
+- Coloured *text* on a light background: 700 or darker.
+- Coloured text on the dark background: 300–500.
+
+<div className="sb-unstyled not-prose my-4">
+  <Ramp title="Ink and cream">
+    <Swatch cls="bg-ink" name="ink" token="--color-ink" />
+    <Swatch cls="bg-cream" name="cream" token="--color-cream" />
+  </Ramp>
+  <Ramp title="Short names (brand shade and its soft tint)">
+    <Swatch cls="bg-lime" name="lime → lime-500" token="--color-lime" />
+    <Swatch cls="bg-lime-soft" name="lime-soft → lime-200" token="--color-lime-soft" />
+    <Swatch cls="bg-purple" name="purple → purple-500" token="--color-purple" />
+    <Swatch cls="bg-purple-soft" name="purple-soft → purple-200" token="--color-purple-soft" />
+    <Swatch cls="bg-orange" name="orange → orange-500" token="--color-orange" />
+    <Swatch cls="bg-orange-soft" name="orange-soft → orange-200" token="--color-orange-soft" />
+    <Swatch cls="bg-pink" name="pink → pink-500" token="--color-pink" />
+    <Swatch cls="bg-pink-soft" name="pink-soft → pink-200" token="--color-pink-soft" />
+  </Ramp>
+  <Ramp title="Grey (warm, same hue as cream)">
+    <Swatch cls="bg-grey-100" name="grey-100" token="--color-grey-100" />
+    <Swatch cls="bg-grey-200" name="grey-200" token="--color-grey-200" />
+    <Swatch cls="bg-grey-300" name="grey-300" token="--color-grey-300" />
+    <Swatch cls="bg-grey-400" name="grey-400" token="--color-grey-400" />
+    <Swatch cls="bg-grey-500" name="grey-500" token="--color-grey-500" />
+    <Swatch cls="bg-grey-600" name="grey-600" token="--color-grey-600" />
+    <Swatch cls="bg-grey-700" name="grey-700" token="--color-grey-700" />
+    <Swatch cls="bg-grey-800" name="grey-800" token="--color-grey-800" />
+    <Swatch cls="bg-grey-900" name="grey-900" token="--color-grey-900" />
+    <Swatch cls="bg-grey-950" name="grey-950" token="--color-grey-950" />
+  </Ramp>
+  <Ramp title="Lime">
+    <Swatch cls="bg-lime-100" name="lime-100" token="--color-lime-100" />
+    <Swatch cls="bg-lime-200" name="lime-200" token="--color-lime-200" />
+    <Swatch cls="bg-lime-300" name="lime-300" token="--color-lime-300" />
+    <Swatch cls="bg-lime-400" name="lime-400" token="--color-lime-400" />
+    <Swatch cls="bg-lime-500" name="lime-500" token="--color-lime-500" />
+    <Swatch cls="bg-lime-600" name="lime-600" token="--color-lime-600" />
+    <Swatch cls="bg-lime-700" name="lime-700" token="--color-lime-700" />
+    <Swatch cls="bg-lime-800" name="lime-800" token="--color-lime-800" />
+    <Swatch cls="bg-lime-900" name="lime-900" token="--color-lime-900" />
+  </Ramp>
+  <Ramp title="Purple">
+    <Swatch cls="bg-purple-100" name="purple-100" token="--color-purple-100" />
+    <Swatch cls="bg-purple-200" name="purple-200" token="--color-purple-200" />
+    <Swatch cls="bg-purple-300" name="purple-300" token="--color-purple-300" />
+    <Swatch cls="bg-purple-400" name="purple-400" token="--color-purple-400" />
+    <Swatch cls="bg-purple-500" name="purple-500" token="--color-purple-500" />
+    <Swatch cls="bg-purple-600" name="purple-600" token="--color-purple-600" />
+    <Swatch cls="bg-purple-700" name="purple-700" token="--color-purple-700" />
+    <Swatch cls="bg-purple-800" name="purple-800" token="--color-purple-800" />
+    <Swatch cls="bg-purple-900" name="purple-900" token="--color-purple-900" />
+  </Ramp>
+  <Ramp title="Orange">
+    <Swatch cls="bg-orange-100" name="orange-100" token="--color-orange-100" />
+    <Swatch cls="bg-orange-200" name="orange-200" token="--color-orange-200" />
+    <Swatch cls="bg-orange-300" name="orange-300" token="--color-orange-300" />
+    <Swatch cls="bg-orange-400" name="orange-400" token="--color-orange-400" />
+    <Swatch cls="bg-orange-500" name="orange-500" token="--color-orange-500" />
+    <Swatch cls="bg-orange-600" name="orange-600" token="--color-orange-600" />
+    <Swatch cls="bg-orange-700" name="orange-700" token="--color-orange-700" />
+    <Swatch cls="bg-orange-800" name="orange-800" token="--color-orange-800" />
+    <Swatch cls="bg-orange-900" name="orange-900" token="--color-orange-900" />
+  </Ramp>
+  <Ramp title="Pink">
+    <Swatch cls="bg-pink-100" name="pink-100" token="--color-pink-100" />
+    <Swatch cls="bg-pink-200" name="pink-200" token="--color-pink-200" />
+    <Swatch cls="bg-pink-300" name="pink-300" token="--color-pink-300" />
+    <Swatch cls="bg-pink-400" name="pink-400" token="--color-pink-400" />
+    <Swatch cls="bg-pink-500" name="pink-500" token="--color-pink-500" />
+    <Swatch cls="bg-pink-600" name="pink-600" token="--color-pink-600" />
+    <Swatch cls="bg-pink-700" name="pink-700" token="--color-pink-700" />
+    <Swatch cls="bg-pink-800" name="pink-800" token="--color-pink-800" />
+    <Swatch cls="bg-pink-900" name="pink-900" token="--color-pink-900" />
+  </Ramp>
+</div>
+
+## Theme colours
+
+These change with light and dark, so each one shows both. Components should use these names
+(`bg-primary`, not `bg-lime`) whenever the colour has a *role*: then dark mode works by itself.
+
+The variable you edit is the short one (`--primary`), in `:root` for light and `.dark` for dark.
+Tailwind reads it through `--color-primary`, which is what makes `bg-primary` exist.
+
+<div className="sb-unstyled not-prose my-4">
+  <div className="hidden gap-3 pb-2 font-mono text-xs font-bold uppercase sm:grid sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)]">
+    <span>Class and variable</span><span>Light</span><span>Dark</span>
+  </div>
+  <ThemeRow cls="bg-background" token="--background" light="--color-cream" dark="--color-grey-950" preview="border-2 border-border bg-background text-foreground">Page</ThemeRow>
+  <ThemeRow cls="text-foreground" token="--foreground" light="--color-ink" dark="--color-cream" preview="bg-background text-foreground" />
+  <ThemeRow cls="bg-card" token="--card" light="white" dark="--color-grey-900" preview="border-2 border-border bg-card text-card-foreground">Card</ThemeRow>
+  <ThemeRow cls="text-card-foreground" token="--card-foreground" light="--color-ink" dark="--color-cream" preview="bg-card text-card-foreground" />
+  <ThemeRow cls="bg-popover" token="--popover" light="white" dark="--color-grey-900" preview="border-2 border-border bg-popover text-popover-foreground">Popover</ThemeRow>
+  <ThemeRow cls="text-popover-foreground" token="--popover-foreground" light="--color-ink" dark="--color-cream" preview="bg-popover text-popover-foreground" />
+  <ThemeRow cls="bg-primary" token="--primary" light="--color-lime" dark="--color-lime" preview="border-2 border-border bg-primary text-primary-foreground">Primary</ThemeRow>
+  <ThemeRow cls="text-primary-foreground" token="--primary-foreground" light="--color-ink" dark="--color-ink" preview="bg-primary text-primary-foreground" />
+  <ThemeRow cls="bg-secondary" token="--secondary" light="--color-purple" dark="--color-purple" preview="border-2 border-border bg-secondary text-secondary-foreground">Secondary</ThemeRow>
+  <ThemeRow cls="text-secondary-foreground" token="--secondary-foreground" light="white" dark="white" preview="bg-secondary text-secondary-foreground" />
+  <ThemeRow cls="bg-muted" token="--muted" light="--color-grey-100" dark="--color-grey-800" preview="border-2 border-border bg-muted text-muted-foreground">Muted</ThemeRow>
+  <ThemeRow cls="text-muted-foreground" token="--muted-foreground" light="--color-grey-600" dark="--color-grey-400" preview="bg-background text-muted-foreground" />
+  <ThemeRow cls="bg-accent" token="--accent" light="--color-grey-100" dark="--color-grey-800" preview="border-2 border-border bg-accent text-accent-foreground">Accent</ThemeRow>
+  <ThemeRow cls="text-accent-foreground" token="--accent-foreground" light="--color-ink" dark="--color-cream" preview="bg-accent text-accent-foreground" />
+  <ThemeRow cls="bg-destructive / text-destructive" token="--destructive" light="oklch(0.54 0.209 29.5)" dark="oklch(0.709 0.183 27.7)" preview="bg-background text-destructive">Delete</ThemeRow>
+  <ThemeRow cls="text-pink-text" token="--pink-text" light="--color-pink-700" dark="--color-pink-500" preview="bg-background text-pink-text">Reviewed 1 of 10</ThemeRow>
+  <ThemeRow cls="border-border" token="--border" light="--color-ink" dark="--color-cream" preview="border-3 border-border">Border</ThemeRow>
+  <ThemeRow cls="border-input" token="--input" light="--color-ink" dark="--color-cream" preview="border-3 border-input bg-card">Input</ThemeRow>
+  <ThemeRow cls="ring-ring" token="--ring" light="--color-purple" dark="--color-lime" preview="border-2 border-border bg-card ring-3 ring-ring ring-offset-2 ring-offset-background">Focus</ThemeRow>
+</div>
+
+`border-border` is the default: `globals.css` gives every element that colour, so a plain `border-2` is already ink (cream in dark).
+`--ring` is the focus ring: buttons use `focus-visible:ring-3` with `focus-visible:ring-ring`.
+
+## Poster colours
+
+Things drawn on top of a movie poster. The poster doesn't change with the theme, so neither do these.
+
+<div className="sb-unstyled not-prose my-4">
+  <Ramp title="On posters">
+    <Swatch cls="bg-on-media" name="on-media (text-on-media)" token="--color-on-media" />
+    <Swatch cls="bg-on-media-muted" name="on-media-muted" token="--color-on-media-muted" />
+    <Swatch cls="bg-media-scrim" name="media-scrim" token="--color-media-scrim" />
+    <Swatch cls="bg-media-glow" name="media-glow" token="--color-media-glow" />
+  </Ramp>
+  <Ramp title="Score logos (brand colours)">
+    <Swatch cls="bg-imdb" name="imdb" token="--color-imdb" />
+    <Swatch cls="bg-tomato" name="tomato" token="--color-tomato" />
+    <Swatch cls="bg-tomato-leaf" name="tomato-leaf" token="--color-tomato-leaf" />
+  </Ramp>
+</div>
+
+## Hard shadows
+
+Offset down-right, zero blur, fully opaque. Their colour is `--shadow-ink`: ink in light mode, cream in dark mode.
+
+The light/dark labels show the offset (right, down). **`shadow-…`** draws a rectangle behind the box. **`drop-shadow-…`** follows the shape itself (icons, text).
+
+<div className="sb-unstyled not-prose my-4">
+  <ThemeRow live={false} cls="shadow-brutal-sm" token="--shadow-brutal-sm" light="3px 3px" dark="3px 3px" preview="border-2 border-border bg-card shadow-brutal-sm">Chips</ThemeRow>
+  <ThemeRow live={false} cls="shadow-brutal" token="--shadow-brutal" light="5px 5px" dark="5px 5px" preview="border-2 border-border bg-card shadow-brutal">Buttons, cards</ThemeRow>
+  <ThemeRow live={false} cls="shadow-brutal-lg" token="--shadow-brutal-lg" light="8px 8px" dark="8px 8px" preview="border-2 border-border bg-card shadow-brutal-lg">Hover, overlays</ThemeRow>
+  <ThemeRow live={false} cls="shadow-hard" token="--shadow-hard" light="12px 12px" dark="12px 12px" preview="border-2 border-border bg-card shadow-hard">Hero</ThemeRow>
+  <ThemeRow live={false} cls="drop-shadow-brutal-sm" token="--drop-shadow-brutal-sm" light="2px 2px" dark="2px 2px" preview="font-display text-3xl text-primary drop-shadow-brutal-sm">★ Icon</ThemeRow>
+  <ThemeRow live={false} cls="drop-shadow-brutal" token="--drop-shadow-brutal" light="3px 3px" dark="3px 3px" preview="font-display text-3xl text-primary drop-shadow-brutal">★ Icon</ThemeRow>
+  <ThemeRow cls="(colour of all the above)" token="--shadow-ink" light="--color-ink" dark="--color-cream" preview="border-2 border-border bg-card shadow-brutal">Shadow ink</ThemeRow>
+</div>
+
+## Type
+
+### Font families
+
+<div className="sb-unstyled not-prose my-4">
+  <TokenRow cls="font-display" token="--font-display" note="Archivo Black. Big titles, stickers. Usually uppercase.">
+    <p className="font-display text-3xl leading-none uppercase">Wanna watch</p>
+  </TokenRow>
+  <TokenRow cls="font-heading" token="--font-heading" note="Same as font-display (shadcn components ask for this name).">
+    <p className="font-heading text-3xl leading-none uppercase">Wanna watch</p>
+  </TokenRow>
+  <TokenRow cls="font-sans" token="--font-sans" note="Public Sans. Body text, the default for the whole page.">
+    <p className="font-sans text-base">Daily movie recommendations based on what you like.</p>
+  </TokenRow>
+  <TokenRow cls="font-mono" token="--font-mono" note="Geist Mono. Labels, genres, scores.">
+    <p className="font-mono text-xs tracking-wider uppercase">Action · Horror · Thriller</p>
+  </TokenRow>
+</div>
+
+### Text sizes
+
+Tailwind's own scale (not changed in `globals.css`). Each `text-…` class also sets a matching line height.
+To change one, add for example `--text-lg: 1.2rem;` to the `@theme` block.
+
+<div className="sb-unstyled not-prose my-4">
+  <TokenRow cls="text-xs" token="--text-xs" note="12px. Labels, genres."><p className="truncate text-xs">Wanna watch</p></TokenRow>
+  <TokenRow cls="text-sm" token="--text-sm" note="14px. Small text, buttons."><p className="truncate text-sm">Wanna watch</p></TokenRow>
+  <TokenRow cls="text-base" token="--text-base" note="16px. Body text."><p className="truncate text-base">Wanna watch</p></TokenRow>
+  <TokenRow cls="text-lg" token="--text-lg" note="18px."><p className="truncate text-lg">Wanna watch</p></TokenRow>
+  <TokenRow cls="text-xl" token="--text-xl" note="20px."><p className="truncate text-xl">Wanna watch</p></TokenRow>
+  <TokenRow cls="text-2xl" token="--text-2xl" note="24px."><p className="truncate text-2xl">Wanna watch</p></TokenRow>
+  <TokenRow cls="text-3xl" token="--text-3xl" note="30px."><p className="truncate text-3xl">Wanna watch</p></TokenRow>
+  <TokenRow cls="text-4xl" token="--text-4xl" note="36px. Page titles on phones."><p className="truncate text-4xl">Wanna watch</p></TokenRow>
+  <TokenRow cls="text-5xl" token="--text-5xl" note="48px. Page titles."><p className="truncate text-5xl">Wanna watch</p></TokenRow>
+</div>
+
+### Weight and letter spacing
+
+<div className="sb-unstyled not-prose my-4">
+  <TokenRow cls="font-medium" token="--font-weight-medium" note="500."><p className="text-lg font-medium">Wanna watch</p></TokenRow>
+  <TokenRow cls="font-bold" token="--font-weight-bold" note="700."><p className="text-lg font-bold">Wanna watch</p></TokenRow>
+  <TokenRow cls="tracking-wider" token="--tracking-wider" note="Wider letter spacing, for small uppercase mono labels."><p className="font-mono text-xs tracking-wider uppercase">Wanna watch</p></TokenRow>
+  <TokenRow cls="leading-none" token="" note="Line height 1: no extra space above and below big titles."><p className="font-display text-3xl leading-none uppercase">Wanna<br />watch</p></TokenRow>
+</div>
+
+## Spacing
+
+One base step, `--spacing`, and every spacing class is a multiple of it: `p-4` = 4 × 0.25rem = 16px.
+The same numbers work for padding (`p-`, `px-`, `py-`), margin (`m-`), gaps (`gap-`), sizes (`w-`, `h-`, `size-`) and positions (`top-`, `inset-`).
+Change `--spacing` and the whole layout scales.
+
+<div className="sb-unstyled not-prose my-4">
+  <TokenRow cls="--spacing (base step)" token="--spacing" note="Tailwind's default." />
+  <TokenRow cls="p-1 · gap-1 · w-1" note="1 × base = 4px"><div className="h-4 w-1 bg-secondary" /></TokenRow>
+  <TokenRow cls="p-2 · gap-2 · w-2" note="2 × base = 8px"><div className="h-4 w-2 bg-secondary" /></TokenRow>
+  <TokenRow cls="p-3 · gap-3 · w-3" note="3 × base = 12px"><div className="h-4 w-3 bg-secondary" /></TokenRow>
+  <TokenRow cls="p-4 · gap-4 · w-4" note="4 × base = 16px"><div className="h-4 w-4 bg-secondary" /></TokenRow>
+  <TokenRow cls="p-5 · gap-5 · w-5" note="5 × base = 20px"><div className="h-4 w-5 bg-secondary" /></TokenRow>
+  <TokenRow cls="p-6 · gap-6 · w-6" note="6 × base = 24px"><div className="h-4 w-6 bg-secondary" /></TokenRow>
+  <TokenRow cls="p-8 · gap-8 · w-8" note="8 × base = 32px"><div className="h-4 w-8 bg-secondary" /></TokenRow>
+  <TokenRow cls="p-10 · gap-10 · w-10" note="10 × base = 40px"><div className="h-4 w-10 bg-secondary" /></TokenRow>
+  <TokenRow cls="p-12 · gap-12 · w-12" note="12 × base = 48px"><div className="h-4 w-12 bg-secondary" /></TokenRow>
+  <TokenRow cls="p-16 · gap-16 · w-16" note="16 × base = 64px"><div className="h-4 w-16 bg-secondary" /></TokenRow>
+  <TokenRow cls="p-20 · gap-20 · w-20" note="20 × base = 80px"><div className="h-4 w-20 bg-secondary" /></TokenRow>
+</div>
+
+## Borders
+
+Border widths are plain pixel classes, not variables. The colour comes from `border-border` (see Theme colours).
+
+<div className="sb-unstyled not-prose my-4">
+  <TokenRow cls="border-2" note="2px. Small things: chips, inputs inside cards."><div className="h-12 w-24 rounded-md border-2 border-border bg-card" /></TokenRow>
+  <TokenRow cls="border-3" note="3px. The default outline: buttons, cards."><div className="h-12 w-24 rounded-md border-3 border-border bg-card" /></TokenRow>
+</div>
+
+## Radius
+
+One base, `--radius`, and every size is a multiple of it. Change `--radius` (in `:root`) and all corners follow.
+
+<div className="sb-unstyled not-prose my-4">
+  <TokenRow cls="--radius (base)" token="--radius" note="Set in :root. rounded-lg is exactly this." />
+  <TokenRow cls="rounded-sm" token="--radius-sm" note="0.6 × base ≈ 7px"><div className="size-16 rounded-sm border-3 border-border bg-card" /></TokenRow>
+  <TokenRow cls="rounded-md" token="--radius-md" note="0.8 × base ≈ 10px"><div className="size-16 rounded-md border-3 border-border bg-card" /></TokenRow>
+  <TokenRow cls="rounded-lg" token="--radius-lg" note="1 × base = 12px"><div className="size-16 rounded-lg border-3 border-border bg-card" /></TokenRow>
+  <TokenRow cls="rounded-xl" token="--radius-xl" note="1.4 × base ≈ 17px. Cards."><div className="size-16 rounded-xl border-3 border-border bg-card" /></TokenRow>
+  <TokenRow cls="rounded-2xl" token="--radius-2xl" note="1.8 × base ≈ 22px"><div className="size-16 rounded-2xl border-3 border-border bg-card" /></TokenRow>
+  <TokenRow cls="rounded-3xl" token="--radius-3xl" note="2.2 × base ≈ 26px"><div className="size-16 rounded-3xl border-3 border-border bg-card" /></TokenRow>
+  <TokenRow cls="rounded-4xl" token="--radius-4xl" note="2.6 × base ≈ 31px"><div className="size-16 rounded-4xl border-3 border-border bg-card" /></TokenRow>
+  <TokenRow cls="rounded-full" note="A circle or pill. Not a variable."><div className="size-16 rounded-full border-3 border-border bg-card" /></TokenRow>
+</div>
+
+## Motion
+
+Every animation needs a `motion-safe:` or `motion-reduce:` version, for people who switch motion off.
+
+<div className="sb-unstyled not-prose my-4">
+  <TokenRow cls="ease-spring" token="--ease-spring" note="Goes a little past the end, then settles. Hover the box.">
+    <div className="group h-12 w-full rounded-md border-2 border-border bg-card p-1">
+      <div className="size-9 rounded-sm border-2 border-border bg-primary transition-transform duration-500 ease-spring motion-safe:group-hover:translate-x-24" />
+    </div>
+  </TokenRow>
+  <TokenRow cls="animate-wave" token="--animate-wave" note="Slides sideways forever (the liquid rating). Uses the wave keyframes in the same @theme block.">
+    <div className="h-12 w-full overflow-hidden rounded-md border-2 border-border bg-card">
+      <div className="flex h-full w-[200%] motion-safe:animate-wave">
+        <div className="flex-1 bg-primary" /><div className="flex-1 bg-secondary" /><div className="flex-1 bg-primary" /><div className="flex-1 bg-secondary" />
+      </div>
+    </div>
+  </TokenRow>
+</div>
+
+## Custom utilities
+
+Not tokens, but home-made classes defined with `@utility` at the bottom of `globals.css`.
+
+<div className="sb-unstyled not-prose my-4">
+  <TokenRow cls="sticker-outline" note="An outline around every letter, the weight of the sticker icons' border. Colour: --border.">
+    <p className="font-display text-3xl text-pink-500 uppercase sticker-outline">I loved it</p>
+  </TokenRow>
+  <TokenRow cls="sticker-size" note="Sets --sticker-size (the size of the MovieCard's sticker icons) from the width of its container. Icons use it as size-(--sticker-size)." />
+  <TokenRow cls="sticker-text-size" note="Font size and side padding of the score text next to the check, worked out from --sticker-size." />
+  <TokenRow cls="on-media-ink" note="Keeps borders and shadows black in dark mode too, for things sitting on a poster.">
+    <div className="dark rounded-lg bg-background p-3">
+      <div className="on-media-ink grid h-12 place-items-center rounded-md border-3 border-border bg-primary font-bold text-primary-foreground shadow-brutal">Still black in dark</div>
+    </div>
+  </TokenRow>
+</div>
+
+## Contrast (WCAG AA needs 4.5:1 for text)
+
+<div className="sb-unstyled not-prose">
+  <Table
+    head={['Pair', 'Ratio']}
+    rows={[
+      ['ink on cream', '19.3'],
+      ['ink on lime', '17.0'],
+      ['ink on orange', '8.4'],
+      ['ink on pink', '6.7'],
+      ['white on purple', '5.9'],
+      ['muted text (grey-600) on cream / muted', '6.2 / 5.5'],
+      ['cream on dark background (grey-950)', '17.8'],
+      ['muted text (grey-400) on dark background / muted', '7.3 / 5.7'],
+      ['lime on dark background', '15.7'],
+      ['destructive on cream / dark', '5.5 / 6.5'],
+      ['lime / orange / pink 700 on cream', '4.8 / 5.3 / 5.9'],
+      ['genres (grey-300) on the poster scrim', '12.0'],
+    ]}
+  />
+</div>
+
+**Never** put lime, orange or pink 500 *text* on a light background. Use them as fills with
+ink text, or use the 700 shade for text.

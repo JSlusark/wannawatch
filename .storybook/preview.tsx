@@ -3,6 +3,30 @@ import type { Preview } from '@storybook/nextjs-vite'
 import '../src/app/globals.css'
 
 const preview: Preview = {
+  // Toolbar switch: adds/removes the `dark` class on <html>, exactly like the app does
+  globalTypes: {
+    theme: {
+      description: 'Colour theme',
+      toolbar: {
+        title: 'Theme',
+        icon: 'circlehollow',
+        items: [
+          { value: 'light', title: 'Light', icon: 'sun' },
+          { value: 'dark', title: 'Dark', icon: 'moon' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+  },
+  initialGlobals: {
+    theme: 'light',
+  },
+  decorators: [
+    (Story, context) => {
+      document.documentElement.classList.toggle('dark', context.globals.theme === 'dark')
+      return <Story />
+    },
+  ],
   parameters: {
     controls: {
       matchers: {
