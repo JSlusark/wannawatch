@@ -4,7 +4,7 @@
 
 import type { Movie } from "@/data/movies";
 
-import type { MovieRow, NewMovieRow } from "./schema";
+import { movies, type MovieRow, type NewMovieRow } from "./schema";
 
 // The columns a card needs. Any query that selects at least these can use toMovie
 type MovieCardRow = Pick<
@@ -19,6 +19,20 @@ type MovieCardRow = Pick<
   | "imdbRating"
   | "rottenTomatoesScore"
 >;
+
+// The same columns, ready for db.select(cardColumns): a query loads only what a card
+// shows (not, for example, the 384 numbers of the movie's vector)
+export const cardColumns = {
+  traktId: movies.traktId,
+  title: movies.title,
+  year: movies.year,
+  runtime: movies.runtime,
+  genres: movies.genres,
+  plot: movies.plot,
+  posterUrl: movies.posterUrl,
+  imdbRating: movies.imdbRating,
+  rottenTomatoesScore: movies.rottenTomatoesScore,
+};
 
 // A row → the app's Movie. The id is the movie API's id (traktId), like every Movie
 export function toMovie(row: MovieCardRow): Movie {
