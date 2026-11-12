@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
     // next/image only shows outside images from addresses listed here.
     // The movie API's posters live on *.trakt.tv (e.g. media.trakt.tv)
     remotePatterns: [{ protocol: "https", hostname: "**.trakt.tv" }],
+    // The browser loads the posters straight from the movie API's image server.
+    // Next's optimizer would download them on the server first, and that server
+    // refuses it (403: it only answers browsers). The posters are already small
+    // .webp files, and it keeps the site inside Vercel's free image limits
+    unoptimized: true,
   },
   // The landing page (now at /welcome) is hidden until sign up exists, so the
   // home address sends people straight into the app. The server answers before
