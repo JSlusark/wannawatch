@@ -33,6 +33,7 @@ import { useUserMovies } from "@/components/CatalogueGrid/useUserMovies";
 import { SuggestionCard } from "@/components/SuggestionCard";
 import { Button } from "@/components/ui/button";
 import type { Movie } from "@/data/movies";
+import type { SaveUserMovie, UserMovies } from "@/data/userMovies";
 import { cn } from "@/lib/utils";
 
 // Drag further than this (px), or fling faster than this (px/s), to decide
@@ -60,11 +61,15 @@ function pilePose(position: number) {
 
 type SwipeDeckProps = {
   movies: Movie[];
+  /** What the user already marked (the server's mock library) */
+  userMovies?: UserMovies;
+  /** Where each WannaWatch swipe and each rating is saved. Storybook leaves it out */
+  save?: SaveUserMovie;
 };
 
 // Today's pile of movies. Drag the top card right for "WannaWatch" or left to pass.
 // (Keyboard: focus the deck and use the left and right arrow keys.)
-function SwipeDeck({ movies }: SwipeDeckProps) {
+function SwipeDeck({ movies, userMovies: initial, save }: SwipeDeckProps) {
   const [index, setIndex] = useState(0); // how many cards are already decided
   const [direction, setDirection] = useState<Direction>(1); // where the last card flew
   const [leaving, setLeaving] = useState<Direction | null>(null); // arrow key pressed, card on its way out
@@ -72,7 +77,8 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
   // true while the top card shows its back, after "I already watched this movie"
   const [isRating, setIsRating] = useState(false);
   const alreadyWatchedRef = useRef<HTMLButtonElement>(null);
-  const { userMovies, update: updateUserMovie } = useUserMovies();
+  // Same hook as the catalogue: the card changes at once, and `save` sends it to the library
+  const { userMovies, update: updateUserMovie } = useUserMovies(initial, save);
 
   // How far the top card is dragged (shared with the coloured background)
   const dragX = useMotionValue(0);

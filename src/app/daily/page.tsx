@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { saveUserMovie } from "@/server/actions/userMovies";
 import { getDailyPicks } from "@/server/dailyPicks";
 import { getUserMovies } from "@/server/userLibrary";
 import { DailyPicksView } from "@/views/DailyPicksView";
@@ -15,5 +16,11 @@ export default async function Page() {
     .map(([id]) => Number(id));
 
   const movies = await getDailyPicks(marked);
-  return <DailyPicksView movies={movies} />;
+  return (
+    <DailyPicksView
+      movies={movies}
+      userMovies={userMovies}
+      save={saveUserMovie}
+    />
+  );
 }
