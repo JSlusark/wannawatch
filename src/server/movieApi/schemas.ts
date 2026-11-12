@@ -3,7 +3,7 @@ import { z } from "zod";
 // Layer 2: what a movie from the API looks like (with ?extended=full). Only the fields
 // we use: Zod drops every other field. `.nullish()` = the field can be missing or null,
 // which the API does for movies it knows little about.
-const apiMovieSchema = z.object({
+export const apiMovieSchema = z.object({
   title: z.string(),
   year: z.number().nullish(),
   ids: z.object({
@@ -20,7 +20,7 @@ const apiMovieSchema = z.object({
     .nullish(),
 });
 
-// /movies/popular sends a plain list of movies
+// /movies/{id} sends one movie; /movies/popular sends a plain list of them
 export const apiMoviesSchema = z.array(apiMovieSchema);
 
 // The TypeScript type, worked out from the schema, so the two can never disagree

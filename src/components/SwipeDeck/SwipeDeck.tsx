@@ -25,6 +25,10 @@ import { flushSync } from "react-dom";
 
 import { LogoEye } from "@/components/Logo";
 import { MovieDetailsContent, type Rating } from "@/components/MovieCard";
+import {
+  MovieSpotlight,
+  SPOTLIGHT_CARD_SIZE,
+} from "@/components/MovieSpotlight";
 import { useUserMovies } from "@/components/CatalogueGrid/useUserMovies";
 import { SuggestionCard } from "@/components/SuggestionCard";
 import { Button } from "@/components/ui/button";
@@ -143,120 +147,120 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
   }
 
   return (
-    // Deck on the left, details of the top card on the right, centred on each other
-    <div className="mx-auto grid w-full max-w-5xl items-center gap-12 lg:grid-cols-[auto_minmax(0,1fr)] lg:gap-20">
-      <div className="flex flex-col items-center gap-6">
-        <DecisionBackground x={dragX} />
-        {/* Keeps the heading levels in order (h1 page title → h2 → h3 card titles) */}
-        <h2 className="sr-only">Today&apos;s movies</h2>
-        {/* Screen readers hear each decision (the flying card is only visual) */}
-        <p aria-live="polite" className="sr-only">
-          {announcement}
-        </p>
+    // Deck on the left, details of the top card on the right
+    <MovieSpotlight
+      card={
+        <>
+          <DecisionBackground x={dragX} />
+          {/* Keeps the heading levels in order (h1 page title → h2 → h3 card titles) */}
+          <h2 className="sr-only">Today&apos;s movies</h2>
+          {/* Screen readers hear each decision (the flying card is only visual) */}
+          <p aria-live="polite" className="sr-only">
+            {announcement}
+          </p>
 
-        {/* Swiping is done by hand. For the keyboard: focus the deck, then press the
+          {/* Swiping is done by hand. For the keyboard: focus the deck, then press the
           left arrow to pass or the right arrow to WannaWatch. */}
-        {/* All cards share one grid cell, so they sit on top of each other */}
-        <div
-          tabIndex={0}
-          role="group"
-          aria-label="Movie deck. Press the left arrow to pass or the right arrow to WannaWatch."
-          onKeyDown={(event) => {
-            // Only when the deck itself has focus, so the rating slider keeps its arrow keys
-            // and not while the top card shows its rating side
-            if (
-              event.target !== event.currentTarget ||
-              leaving !== null ||
-              isRating
-            )
-              return;
-            if (event.key === "ArrowLeft") setLeaving(-1);
-            if (event.key === "ArrowRight") setLeaving(1);
-          }}
-          // pb = room for the edges of the cards behind, which hang below the top card
-          className="grid rounded-xl pb-6 outline-none focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
-        >
-          {/* custom = the direction, handed to the card that is leaving so it flies the right way.
+          {/* All cards share one grid cell, so they sit on top of each other */}
+          <div
+            tabIndex={0}
+            role="group"
+            aria-label="Movie deck. Press the left arrow to pass or the right arrow to WannaWatch."
+            onKeyDown={(event) => {
+              // Only when the deck itself has focus, so the rating slider keeps its arrow keys
+              // and not while the top card shows its rating side
+              if (
+                event.target !== event.currentTarget ||
+                leaving !== null ||
+                isRating
+              )
+                return;
+              if (event.key === "ArrowLeft") setLeaving(-1);
+              if (event.key === "ArrowRight") setLeaving(1);
+            }}
+            // pb = room for the edges of the cards behind, which hang below the top card
+            className="grid rounded-xl pb-6 outline-none focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+          >
+            {/* custom = the direction, handed to the card that is leaving so it flies the right way.
             initial={false}: the first cards are simply there when the page opens. */}
-          <AnimatePresence custom={direction} initial={false}>
-            {pile.map((movie, position) => {
-              const isTop = position === 0;
-              return (
-                <motion.div
-                  key={movie.id}
-                  className="col-start-1 row-start-1"
-                  // originY 1 = shrink towards the bottom edge, so the step down is exactly PILE_STEP
-                  style={{ zIndex: VISIBLE_CARDS - position, originY: 1 }}
-                  // A new card starts hidden right behind the one in front of it and slides
-                  // down into place, so there are never more than 3 cards on screen
-                  initial={pilePose(position - 1)}
-                  animate={pilePose(position)}
-                  exit="gone"
-                  variants={{
-                    gone: (dir: Direction) => ({
-                      zIndex: VISIBLE_CARDS + 1, // fly over the pile, not under it
-                      x: dir * 700,
-                      rotate: dir * 25,
-                      opacity: 0,
-                      transition: { duration: 0.4, ease: "easeIn" },
-                    }),
-                  }}
-                  transition={{ type: "spring", stiffness: 260, damping: 26 }}
-                  // Cards behind the top one can't be reached by mouse, Tab or screen reader
-                  inert={!isTop}
-                  aria-hidden={!isTop}
-                >
-                  <SwipeableCard
-                    enabled={isTop && !isRating}
-                    leaving={isTop ? leaving : null}
-                    dragX={dragX}
-                    onDecide={decide}
+            <AnimatePresence custom={direction} initial={false}>
+              {pile.map((movie, position) => {
+                const isTop = position === 0;
+                return (
+                  <motion.div
+                    key={movie.id}
+                    className="col-start-1 row-start-1"
+                    // originY 1 = shrink towards the bottom edge, so the step down is exactly PILE_STEP
+                    style={{ zIndex: VISIBLE_CARDS - position, originY: 1 }}
+                    // A new card starts hidden right behind the one in front of it and slides
+                    // down into place, so there are never more than 3 cards on screen
+                    initial={pilePose(position - 1)}
+                    animate={pilePose(position)}
+                    exit="gone"
+                    variants={{
+                      gone: (dir: Direction) => ({
+                        zIndex: VISIBLE_CARDS + 1, // fly over the pile, not under it
+                        x: dir * 700,
+                        rotate: dir * 25,
+                        opacity: 0,
+                        transition: { duration: 0.4, ease: "easeIn" },
+                      }),
+                    }}
+                    transition={{ type: "spring", stiffness: 260, damping: 26 }}
+                    // Cards behind the top one can't be reached by mouse, Tab or screen reader
+                    inert={!isTop}
+                    aria-hidden={!isTop}
                   >
-                    {(overlay) => (
-                      <SuggestionCard
-                        movie={movie}
-                        overlay={overlay}
-                        flipped={isTop && isRating}
-                        onClose={closeRating}
-                        onRate={rateWatched}
-                        size="w-[clamp(12rem,calc((100dvh-16rem)*0.533),20.8rem)]"
-                      />
-                    )}
-                  </SwipeableCard>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
+                    <SwipeableCard
+                      enabled={isTop && !isRating}
+                      leaving={isTop ? leaving : null}
+                      dragX={dragX}
+                      onDecide={decide}
+                    >
+                      {(overlay) => (
+                        <SuggestionCard
+                          movie={movie}
+                          overlay={overlay}
+                          flipped={isTop && isRating}
+                          onClose={closeRating}
+                          onRate={rateWatched}
+                          size={SPOTLIGHT_CARD_SIZE}
+                        />
+                      )}
+                    </SwipeableCard>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
 
-        {/* Outside the card: turns the top card to its back to rate it instead.
+          {/* Outside the card: turns the top card to its back to rate it instead.
             invisible while the back shows (it would do nothing), but it keeps its space. */}
-        <Button
-          ref={alreadyWatchedRef}
-          variant="link"
-          onClick={() => setIsRating(true)}
-          className={cn(isRating && "invisible")}
-        >
-          I already watched this movie
-        </Button>
-      </div>
-
-      {/* Plain text next to the deck, no box. It follows the top card. */}
-      <section aria-label="About this movie" className="max-w-2xl">
-        {/* Progress, lined up with the title below it */}
-        <p className="mb-3 text-lg font-medium text-pink-text tabular-nums">
-          Reviewed {index} of {movies.length}
-        </p>
-        <MovieDetailsContent
-          title={current.title}
-          genres={current.genre}
-          plot={current.plot}
-          imdbScore={current.imdbScore}
-          rottenTomatoesScore={current.rottenTomatoesScore}
-          details={current}
-        />
-      </section>
-    </div>
+          <Button
+            ref={alreadyWatchedRef}
+            variant="link"
+            onClick={() => setIsRating(true)}
+            className={cn(isRating && "invisible")}
+          >
+            I already watched this movie
+          </Button>
+        </>
+      }
+    >
+      {/* The details follow the top card */}
+      {/* Progress, lined up with the title below it */}
+      <p className="mb-3 text-lg font-medium text-pink-text tabular-nums">
+        Reviewed {index} of {movies.length}
+      </p>
+      <MovieDetailsContent
+        title={current.title}
+        genres={current.genre}
+        plot={current.plot}
+        imdbScore={current.imdbScore}
+        rottenTomatoesScore={current.rottenTomatoesScore}
+        details={current}
+      />
+    </MovieSpotlight>
   );
 }
 

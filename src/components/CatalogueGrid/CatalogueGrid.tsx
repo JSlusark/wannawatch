@@ -9,6 +9,7 @@ import type {
 } from "@/data/userMovies";
 import { cn } from "@/lib/utils";
 
+import { cardActions } from "./cardActions";
 import { useUserMovies } from "./useUserMovies";
 
 type CatalogueGridProps = {
@@ -54,13 +55,7 @@ function CatalogueGrid({
             <MovieCard
               movie={movie}
               userMovie={userMovie}
-              onRate={(rating) => update(movie, { watched: true, rating })}
-              onUnwatch={() =>
-                update(movie, { watched: false, rating: undefined })
-              }
-              onToggleBookmark={() =>
-                update(movie, { bookmarked: !userMovie?.bookmarked })
-              }
+              {...cardActions(movie, userMovie, update)}
               size="w-full"
             />
           </li>

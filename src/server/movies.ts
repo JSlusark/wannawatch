@@ -1,12 +1,15 @@
 import "server-only"; // build error if a browser component ever imports this file
 
 import { connection } from "next/server";
+import { cache } from "react";
 
-import type { MoviePage } from "@/data/movies";
+import type { Movie, MoviePage } from "@/data/movies";
 
 import { normalizeMovie } from "./movieApi/normalizeMovie";
-import { requestMovieApi } from "./movieApi/request";
-import { apiMoviesSchema } from "./movieApi/schemas";
+import { toPositiveInteger } from "@/lib/urlParams";
+
+import { MovieApiError, requestMovieApi } from "./movieApi/request";
+import { apiMovieSchema, apiMoviesSchema } from "./movieApi/schemas";
 
 // How many movies one page shows
 const PAGE_SIZE = 20;
@@ -33,9 +36,25 @@ export async function getPopularMovies(page = 1): Promise<MoviePage> {
   };
 }
 
+// One movie by its id (the movie API's id, the same one the cards use), with full info.
+// null = the API doesn't know this id, so the page can show "not found".
+// cache(): the page and its tab title both ask for the movie, but within one visit the
+// API is only called once (React remembers the answer until the visit is over).
+export const getMovie = cache(async (id: number): Promise<Movie | null> => {
+  await connection();
+  try {
+    const { data } = await requestMovieApi(`/movies/${id}`, {
+      extended: "full",
+    });
+    return normalizeMovie(apiMovieSchema.parse(data));
+  } catch (error) {
+    if (error instanceof MovieApiError && error.status === 404) return null;
+    throw error; // anything else is a real problem: show the error page
+  }
+});
+
 // Turns ?page=… from the URL into a safe page number. Anyone can type anything in a
 // URL, so "abc", "0", "-3", "2.5" or ?page=1&page=2 all become page 1.
 export function toPageNumber(value: string | string[] | undefined): number {
-  const page = Number(value);
-  return Number.isInteger(page) && page >= 1 ? page : 1;
+  return toPositiveInteger(value) ?? 1;
 }

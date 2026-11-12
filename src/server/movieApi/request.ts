@@ -5,6 +5,18 @@
 // The movie API we use (Trakt). Its address and header names are fixed by the service.
 const MOVIE_API_URL = "https://api.trakt.tv";
 
+// An error that keeps the API's status code, so the caller can tell
+// "this movie doesn't exist" (404) from "the API is down" (500)
+export class MovieApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "MovieApiError";
+  }
+}
+
 // What comes back: the body (still unchecked) and the headers, which hold extra
 // information such as how many pages a list has
 type MovieApiResponse = { data: unknown; headers: Headers };
@@ -38,13 +50,15 @@ export async function requestMovieApi(
   // Waiting and retrying comes with caching (step 4); for now, a clear error.
   if (res.status === 429) {
     console.error("Movie API rate limit:", res.headers.get("X-Ratelimit"));
-    throw new Error(
+    throw new MovieApiError(
       `Movie API says too many requests: try again in ${res.headers.get("Retry-After") ?? "a few"} seconds`,
+      res.status,
     );
   }
   if (!res.ok) {
-    throw new Error(
+    throw new MovieApiError(
       `Movie API ${path} failed: ${res.status} ${res.statusText}`,
+      res.status,
     );
   }
   return { data: await res.json(), headers: res.headers };
