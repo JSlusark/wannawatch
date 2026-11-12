@@ -25,3 +25,9 @@ export const apiMoviesSchema = z.array(apiMovieSchema);
 
 // The TypeScript type, worked out from the schema, so the two can never disagree
 export type ApiMovie = z.infer<typeof apiMovieSchema>;
+
+// /movies/watched/… ("most watched") wraps each movie with its counts:
+// { watcher_count, play_count, …, movie: { … } }. We only keep the movie.
+export const apiWatchedMoviesSchema = z.array(
+  z.object({ movie: apiMovieSchema }),
+);
