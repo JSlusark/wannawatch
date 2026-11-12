@@ -20,7 +20,8 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx --env-file=.env.local scripts/seed-movies.ts",
     "db:embed": "tsx --env-file=.env.local scripts/embed-movies.ts",
-    "find:similar": "tsx --env-file=.env.local scripts/similar-movies.ts"
+    "find:similar": "tsx --env-file=.env.local scripts/similar-movies.ts",
+    "export:static": "tsx --env-file=.env.local scripts/export-static-movies.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
