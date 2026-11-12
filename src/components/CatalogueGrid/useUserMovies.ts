@@ -1,29 +1,27 @@
 import { useState } from "react";
 
-import type { UserMovie, UserMovies } from "@/data/userMovies";
+import type { Movie } from "@/data/movies";
+import {
+  applyUserMovieChange,
+  type SaveUserMovie,
+  type UserMovieChange,
+  type UserMovies,
+} from "@/data/userMovies";
 
-// Remembers what you mark on each movie (watched, score, WannaWatch) while you're on
-// the page; nothing is saved yet (no backend). `initial` = what the lists hold when the
-// page opens. `update` keeps the "never both" rule: marking a movie as watched takes it
-// off WannaWatch, and adding it to WannaWatch makes it not watched again.
-function useUserMovies(initial: UserMovies = {}) {
+// Remembers what you mark on each movie (watched, score, WannaWatch).
+// `initial` = what the lists hold when the page opens.
+// `save` (optional) = where the change also goes, so other pages see it too (the
+// server's mock library). The screen doesn't wait for it: the card changes at once.
+// Without `save` the marks only live on this page (Storybook, the Daily 10).
+function useUserMovies(initial: UserMovies = {}, save?: SaveUserMovie) {
   const [userMovies, setUserMovies] = useState<UserMovies>(initial);
 
-  function update(movieId: number, change: Partial<UserMovie>) {
-    setUserMovies((all) => {
-      const next = {
-        watched: false,
-        bookmarked: false,
-        ...all[movieId],
-        ...change,
-      };
-      if (change.watched) next.bookmarked = false;
-      else if (change.bookmarked) {
-        next.watched = false;
-        next.rating = undefined;
-      }
-      return { ...all, [movieId]: next };
-    });
+  function update(movie: Movie, change: UserMovieChange) {
+    setUserMovies((all) => ({
+      ...all,
+      [movie.id]: applyUserMovieChange(all[movie.id], change),
+    }));
+    save?.(movie, change);
   }
 
   return { userMovies, update };

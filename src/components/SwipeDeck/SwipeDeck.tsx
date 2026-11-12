@@ -81,7 +81,7 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
   // The top card has finished its swipe: record the choice and bring the next card forward
   function decide(choice: Direction) {
     if (!current) return;
-    if (choice === 1) updateUserMovie(current.id, { bookmarked: true });
+    if (choice === 1) updateUserMovie(current, { bookmarked: true });
     setAnnouncement(
       choice === 1
         ? `Added ${current.title} to your WannaWatch list`
@@ -93,7 +93,7 @@ function SwipeDeck({ movies }: SwipeDeckProps) {
   // Rated on the back: it's watched now, so it's no longer a suggestion and leaves the pile
   function rateWatched(rating: Rating) {
     if (!current) return;
-    updateUserMovie(current.id, { watched: true, rating });
+    updateUserMovie(current, { watched: true, rating });
     setAnnouncement(`Marked ${current.title} as watched`);
     nextCard(-1);
   }
