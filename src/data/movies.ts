@@ -26,6 +26,16 @@ export type MoviePage = {
   totalPages: number;
 };
 
+// The movies most like one movie, for its page. Three possible answers:
+// - "ok": the movies, best first (vector search on the plot + genre overlap)
+// - "not-in-database": the movie isn't in the local database (or has no vector yet),
+//   so there's nothing to compare it with
+// - "unavailable": the database didn't answer (e.g. Docker isn't running)
+export type SimilarMovies =
+  | { status: "ok"; movies: Movie[] }
+  | { status: "not-in-database" }
+  | { status: "unavailable" };
+
 // JSON numbers are always read as plain `number`, so this is the one place where we
 // tell TypeScript the file matches the Movie type
 export const movies = mockMovieData as Movie[];

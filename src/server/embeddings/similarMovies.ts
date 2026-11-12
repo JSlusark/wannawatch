@@ -31,10 +31,15 @@ export async function findSimilarMovies(
   const candidates = await db
     .select({
       id: movies.id,
+      traktId: movies.traktId, // the movie API's id: the app's Movie id (cards, links)
       title: movies.title,
       year: movies.year,
+      runtime: movies.runtime,
       genres: movies.genres,
       plot: movies.plot,
+      posterUrl: movies.posterUrl,
+      imdbRating: movies.imdbRating,
+      rottenTomatoesScore: movies.rottenTomatoesScore,
       plotSimilarity,
     })
     .from(movies)

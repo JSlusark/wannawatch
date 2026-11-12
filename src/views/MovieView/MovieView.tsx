@@ -9,12 +9,18 @@ import {
   MovieSpotlight,
   SPOTLIGHT_CARD_SIZE,
 } from "@/components/MovieSpotlight";
+import { SimilarMovies } from "@/components/SimilarMovies";
 import { SiteHeader } from "@/components/SiteHeader";
-import type { Movie } from "@/data/movies";
+import type {
+  Movie,
+  SimilarMovies as SimilarMoviesResult,
+} from "@/data/movies";
 import type { SaveUserMovie, UserMovies } from "@/data/userMovies";
 
 type MovieViewProps = {
   movie: Movie;
+  /** The 10 most similar movies (from the vector search), shown under the details */
+  similar: SimilarMoviesResult;
   /** What the user already marked, so the card opens with the right state */
   userMovies?: UserMovies;
   /** Where each mark is saved (the server's mock library). Storybook leaves it out */
@@ -23,8 +29,14 @@ type MovieViewProps = {
 
 // One movie's page: laid out like the Daily 10 (card on the left, details on the
 // right), but with a single normal card: no pile and no swiping, just its Watched and
-// Bookmark buttons.
-function MovieView({ movie, userMovies: initial, save }: MovieViewProps) {
+// Bookmark buttons. Under it, the most similar movies as clickable cards.
+function MovieView({
+  movie,
+  similar,
+  userMovies: initial,
+  save,
+}: MovieViewProps) {
+  // One record for the big card and the recommendations, so they always agree
   const { userMovies, update } = useUserMovies(initial, save);
   const userMovie = userMovies[movie.id];
 
@@ -52,6 +64,12 @@ function MovieView({ movie, userMovies: initial, save }: MovieViewProps) {
             details={movie}
           />
         </MovieSpotlight>
+
+        <SimilarMovies
+          similar={similar}
+          userMovies={userMovies}
+          onUpdate={update}
+        />
       </main>
     </div>
   );

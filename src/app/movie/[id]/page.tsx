@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { saveUserMovie } from "@/server/actions/userMovies";
 import { getMovie } from "@/server/movies";
+import { getSimilarMovies } from "@/server/recommendations";
 import { getUserMovies } from "@/server/userLibrary";
 import { toPositiveInteger } from "@/lib/urlParams";
 import { MovieView } from "@/views/MovieView";
@@ -31,12 +32,18 @@ export async function generateMetadata({
 }
 
 export default async function Page({ params }: PageProps) {
-  // Both at the same time: neither waits for the other
-  const [movie, userMovies] = await Promise.all([
-    loadMovie(params),
+  const movie = await loadMovie(params);
+  // The recommendations need the movie's id; the marks don't, so the two load together
+  const [similar, userMovies] = await Promise.all([
+    getSimilarMovies(movie.id),
     getUserMovies(),
   ]);
   return (
-    <MovieView movie={movie} userMovies={userMovies} save={saveUserMovie} />
+    <MovieView
+      movie={movie}
+      similar={similar}
+      userMovies={userMovies}
+      save={saveUserMovie}
+    />
   );
 }
