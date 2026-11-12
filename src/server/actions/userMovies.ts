@@ -10,5 +10,5 @@ import { updateLibrary } from "@/server/userLibrary";
 // Mock only: the browser sends the whole movie and the server trusts it. A real version
 // would check who's logged in and look the movie up by id instead.
 export async function saveUserMovie(movie: Movie, change: UserMovieChange) {
-  updateLibrary(movie, change);
+  await updateLibrary(movie, change);
 }
