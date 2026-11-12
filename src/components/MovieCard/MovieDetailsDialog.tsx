@@ -43,9 +43,10 @@ function formatRuntime(minutes: number) {
 }
 
 // Everything you'd want to know about a movie. Used in the pop-up (inDialog, with the
-// poster) and next to the deck on the Daily Picks page (plain, no boxes).
+// poster), and plain (no boxes) next to the card on the Daily Picks and movie pages.
 function MovieDetailsContent({
   inDialog = false,
+  titleAs: TitleTag = "h2",
   title,
   genres,
   plot,
@@ -53,7 +54,11 @@ function MovieDetailsContent({
   rottenTomatoesScore,
   posterUrl,
   details,
-}: MovieDetailsProps & { inDialog?: boolean }) {
+}: MovieDetailsProps & {
+  inDialog?: boolean;
+  /** h1 when the movie is what the whole page is about (the movie page) */
+  titleAs?: "h1" | "h2";
+}) {
   const facts = [
     details?.year ? String(details.year) : undefined,
     details?.runtime ? formatRuntime(details.runtime) : undefined,
@@ -82,7 +87,7 @@ function MovieDetailsContent({
           {inDialog ? (
             <Dialog.Title className={titleClass}>{title}</Dialog.Title>
           ) : (
-            <h2 className={titleClass}>{title}</h2>
+            <TitleTag className={titleClass}>{title}</TitleTag>
           )}
           {facts.length > 0 && (
             <p className="font-mono text-sm font-bold uppercase">

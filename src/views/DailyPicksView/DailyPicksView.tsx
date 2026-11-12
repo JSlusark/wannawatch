@@ -1,15 +1,18 @@
 import { SiteHeader } from "@/components/SiteHeader";
 import { SwipeDeck } from "@/components/SwipeDeck";
-import { movies } from "@/data/movies";
-import { mockUserMovies } from "@/data/userMovies";
+import type { Movie } from "@/data/movies";
+import type { SaveUserMovie, UserMovies } from "@/data/userMovies";
 
-// Today's 10 suggestions: only movies you haven't watched or added to WannaWatch yet
-const DAILY_PICKS = movies
-  .filter((movie) => !mockUserMovies[movie.id])
-  .slice(0, 10);
+type DailyPicksViewProps = {
+  /** Today's suggestions: the page picks them from the database, Storybook passes mocks */
+  movies: Movie[];
+  /** What the user already marked, and where new marks are saved (Storybook: neither) */
+  userMovies?: UserMovies;
+  save?: SaveUserMovie;
+};
 
 // Today's WannaWatch: a pile of 10 cards to swipe through.
-function DailyPicksView() {
+function DailyPicksView({ movies, userMovies, save }: DailyPicksViewProps) {
   return (
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />
@@ -23,7 +26,7 @@ function DailyPicksView() {
           </h1>
           <p className="mt-3 text-lg font-medium">Your daily wanna watch</p>
         </div>
-        <SwipeDeck movies={DAILY_PICKS} />
+        <SwipeDeck movies={movies} userMovies={userMovies} save={save} />
       </main>
     </div>
   );

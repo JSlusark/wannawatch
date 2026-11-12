@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, type Ref } from "react";
+import Link from "next/link";
+import type { Ref } from "react";
 
 import { BookmarkButton } from "@/components/movie/BookmarkButton";
 import { MovieInfo } from "@/components/movie/MovieInfo";
@@ -8,6 +9,7 @@ import { Poster } from "@/components/movie/Poster";
 import { WatchedButton } from "@/components/movie/WatchedButton";
 import type { Movie } from "@/data/movies";
 import type { UserMovie } from "@/data/userMovies";
+import { cn } from "@/lib/utils";
 
 import type { Rating } from "./BackCard";
 
@@ -21,6 +23,8 @@ type FrontCardProps = {
   watchedRef: Ref<HTMLButtonElement>;
   onToggleWatch: () => void;
   onToggleBookmark?: () => void;
+  /** Where clicking the card goes (the movie's page). Missing = the card isn't a link */
+  href?: string;
 };
 
 // FRONT: poster, Watched and Bookmark buttons, ratings, title and genres
@@ -32,23 +36,32 @@ function FrontCard({
   watchedRef,
   onToggleWatch,
   onToggleBookmark,
+  href,
 }: FrontCardProps) {
-  // Where the pointer went down, to tell a tap from the start of a swipe
-  const pressedAt = useRef({ x: 0, y: 0 });
-
   return (
     <article
       inert={inert}
       aria-labelledby={titleId}
-      onPointerDown={(e) => {
-        pressedAt.current = { x: e.clientX, y: e.clientY };
-      }}
-      onClick={(e) => {
-        // clicking the card opens the movie details in a toaster
-      }}
-      className="@container relative isolate col-start-1 row-start-1 flex cursor-pointer aspect-2/3 flex-col justify-end overflow-hidden rounded-xl border-3 border-border bg-muted text-on-media backface-hidden"
+      className={cn(
+        "@container relative isolate col-start-1 row-start-1 flex aspect-2/3 flex-col justify-end overflow-hidden rounded-xl border-3 border-border bg-muted text-on-media backface-hidden",
+        // Keyboard focus on the card's link: the ring goes around the whole card, with a
+        // gap, like the buttons' ring (inside it would get lost on a dark poster)
+        "has-[>a:focus-visible]:ring-3 has-[>a:focus-visible]:ring-ring has-[>a:focus-visible]:ring-offset-2 has-[>a:focus-visible]:ring-offset-background",
+      )}
     >
       <Poster url={movie.image} />
+      {href && (
+        // A "stretched link": an empty link that covers the whole card, so clicking
+        // anywhere opens the movie. Buttons can't go inside a link (invalid HTML, and
+        // screen readers get confused), so the Watched and Bookmark buttons come later
+        // and sit on top of it. Its name is the movie title (aria-labelledby).
+        // Its focus ring is drawn by the card itself (see the article's classes).
+        <Link
+          href={href}
+          aria-labelledby={titleId}
+          className="absolute inset-0 outline-none"
+        />
+      )}
       <CardButtons
         watched={userMovie?.watched ?? false}
         rating={userMovie?.rating ?? null}
@@ -58,6 +71,8 @@ function FrontCard({
         onToggleBookmark={onToggleBookmark}
       />
       <MovieInfo
+        // The text sits on top of the link: let clicks fall through to it
+        className={href && "pointer-events-none"}
         titleId={titleId}
         title={movie.title}
         genres={movie.genre}

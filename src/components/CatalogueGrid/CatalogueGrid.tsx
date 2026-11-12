@@ -2,9 +2,15 @@
 
 import { MovieCard } from "@/components/MovieCard";
 import type { Movie } from "@/data/movies";
-import type { UserMovie, UserMovies } from "@/data/userMovies";
+import { movieHref } from "@/lib/routes";
+import type {
+  SaveUserMovie,
+  UserMovieChange,
+  UserMovies,
+} from "@/data/userMovies";
 import { cn } from "@/lib/utils";
 
+import { cardActions } from "./cardActions";
 import { useUserMovies } from "./useUserMovies";
 
 type CatalogueGridProps = {
@@ -13,18 +19,24 @@ type CatalogueGridProps = {
   /** Pass these two to let a parent own the lists (the profile page shares them
       between its two lists). Without them, the grid remembers them itself. */
   userMovies?: UserMovies;
-  onUpdate?: (movieId: number, change: Partial<UserMovie>) => void;
+  onUpdate?: (movie: Movie, change: UserMovieChange) => void;
+  /** When the grid remembers them itself: what the lists hold when the page opens */
+  initialUserMovies?: UserMovies;
+  /** When the grid remembers them itself: where each change is also saved */
+  save?: SaveUserMovie;
 };
 
-// All catalogue movies as real MovieCards. Remembers what you mark (watched, score,
-// bookmark) while you're on the page; nothing is saved yet (no backend).
+// All catalogue movies as real MovieCards; clicking one opens its movie page. Remembers what you mark (watched, score,
+// bookmark), and hands each change to `save` so the other pages see it too.
 function CatalogueGrid({
   movies,
   className,
   userMovies,
   onUpdate,
+  initialUserMovies,
+  save,
 }: CatalogueGridProps) {
-  const own = useUserMovies();
+  const own = useUserMovies(initialUserMovies, save);
   const lists = userMovies ?? own.userMovies;
   const update = onUpdate ?? own.update;
 
@@ -44,13 +56,8 @@ function CatalogueGrid({
             <MovieCard
               movie={movie}
               userMovie={userMovie}
-              onRate={(rating) => update(movie.id, { watched: true, rating })}
-              onUnwatch={() =>
-                update(movie.id, { watched: false, rating: undefined })
-              }
-              onToggleBookmark={() =>
-                update(movie.id, { bookmarked: !userMovie?.bookmarked })
-              }
+              {...cardActions(movie, userMovie, update)}
+              href={movieHref(movie.id)}
               size="w-full"
             />
           </li>
