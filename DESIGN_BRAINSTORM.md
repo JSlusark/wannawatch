@@ -1,0 +1,41 @@
+<div align="center">
+<h1 id="design-brainstorm" style="font-size: 50px; border-bottom: none;" align="center">Design brainstorm</h1>
+
+[Sketches, Canva and website](#initial-sketches-canva-and-website-preview) · [ChatGPT concept art](#chatgpt-concept-art) · [← Back to the README](./README.md)
+
+</div>
+
+<br/>
+
+The design of WannaWatch started with my pencil sketches of each page. I then converted them into Canva mockups, to get a better sense of what I wanted to build, and these mockups are the equivalent of the current website preview. Some pages, like onboarding and advanced search, are still only designs that I am planning to add.
+
+<br/>
+
+# Initial sketches, Canva and website preview
+
+| Page                     | Initial sketch                                                                                                 | Canva                                                                                                                                                                                                                | Website preview                                                                                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Catalogue**            | <img src="./images/brainstorm/sketches/homeview-discovery.jpg" width="200" alt="Catalogue sketch">             | <img src="./images/brainstorm/canva/catalogue.jpg" width="320" alt="Catalogue in Canva">                                                                                                                             | <img src="./images/brainstorm/preview/catalogue.jpg" width="320" alt="Catalogue on the website">                                                                                                                       |
+| **Movie card and score** | <img src="./images/brainstorm/sketches/add-watched-score.jpg" width="200" alt="Score card sketch">             | <img src="./images/brainstorm/canva/moviecard.jpg" width="320" alt="Movie card in Canva"><br/><img src="./images/brainstorm/canva/movierating.jpg" width="320" alt="Movie rating in Canva">                          | <img src="./images/brainstorm/preview/moviecard-score.jpg" width="320" alt="Movie card and score side on the website">                                                                                                 |
+| **Daily 10**             | <img src="./images/brainstorm/sketches/wannawatch-daily-reccomendation.jpg" width="200" alt="Daily 10 sketch"> | <img src="./images/brainstorm/canva/reccomendationstack.jpg" width="320" alt="Daily 10 stack in Canva"><br/><img src="./images/brainstorm/canva/reccomendationcard.jpg" width="320" alt="Swipe directions in Canva"> | <img src="./images/brainstorm/preview/daily-10.jpg" width="320" alt="Daily 10 on the website"><br/><img src="./images/brainstorm/preview/daily-10-swipe.jpg" width="320" alt="Swiping a Daily 10 card on the website"> |
+| **Profile**              | <img src="./images/brainstorm/sketches/profileview.jpg" width="200" alt="Profile sketch">                      | —                                                                                                                                                                                                                    | <img src="./images/brainstorm/preview/profile.jpg" width="320" alt="Profile on the website">                                                                                                                           |
+| **Onboarding**           | <img src="./images/brainstorm/sketches/onboarding-afterregister.jpg" width="200" alt="Onboarding sketch">      | <img src="./images/brainstorm/canva/onboarding.jpg" width="320" alt="Onboarding in Canva">                                                                                                                           | Not built yet                                                                                                                                                                                                          |
+| **Logo**                 | <img src="./images/brainstorm/sketches/logo.jpg" width="200" alt="Logo sketch">                                | —                                                                                                                                                                                                                    | In the header of every page                                                                                                                                                                                            |
+| **Landing page**         | —                                                                                                              | <img src="./images/brainstorm/canva/landing.jpg" width="320" alt="Landing page in Canva">                                                                                                                            | <img src="./images/brainstorm/preview/landing.jpg" width="320" alt="Landing page on the website">                                                                                                                      |
+| **Advanced search**      | —                                                                                                              | <img src="./images/brainstorm/canva/advancesearch.jpg" width="320" alt="Advanced search in Canva">                                                                                                                   | —                                                                                                                                                                                                                      |
+
+<div align="right"><a href="#design-brainstorm">↑ Return to top</a></div>
+
+# ChatGPT concept art
+
+After that, I used ChatGPT to brainstorm further based on all my designs, to explore a more fun, artistic and grungy vibe. This is the direction I would like to take the design in once the app is more ready.
+
+|                                                                                                                                    |                                                                                                                                              |
+| ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| <img src="./images/brainstorm/chatgpt/neon-zine-movie-swipe-interface.jpg" width="420" alt="Neon zine movie swipe interface">      | <img src="./images/brainstorm/chatgpt/wannawatch-neobrutalist-streaming-styleguide.jpg" width="420" alt="Neobrutalist streaming styleguide"> |
+| <img src="./images/brainstorm/chatgpt/wannawatch-punk-streaming-app-moodboard.jpg" width="420" alt="Punk streaming app moodboard"> | <img src="./images/brainstorm/chatgpt/wannawatch-neon-zine-ui-collage.jpg" width="420" alt="Neon zine UI collage">                           |
+| <img src="./images/brainstorm/chatgpt/wannawatch-neon-collage-ui-board.jpg" width="420" alt="Neon collage UI board">               |                                                                                                                                              |
+
+<br/>
+
+<div align="right"><a href="#design-brainstorm">↑ Return to top</a></div>
